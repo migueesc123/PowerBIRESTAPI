@@ -67,6 +67,9 @@
     <Compile Include="resources.resx">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="AppID.txt">
+      <SubType>Content</SubType>
+    </Compile>
     <Content Include="PBIAPI.query.pq">
       <SubType>Code</SubType>
     </Content>

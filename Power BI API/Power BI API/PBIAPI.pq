@@ -3,7 +3,7 @@
 //
 // OAuth configuration settings
 //
-client_id = "e25e627f-d7f1-43ca-9ca9-25149783209d";
+client_id = Text.FromBinary(Extension.Contents("AppID.txt"));  // TODO: set your API client ID value in the AppID.txt file
 redirect_uri = "https://oauth.powerbi.com/views/oauthredirect.html";
 token_uri = "https://login.windows.net/common/oauth2/token";
 authorize_uri = "https://login.windows.net/common/oauth2/authorize";
