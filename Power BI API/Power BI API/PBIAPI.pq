@@ -15,9 +15,54 @@ windowHeight = 1024;
 
 //
 // Exported function(s)
-//
+// List of DataSets
+// Data Refresh History Personal Workspace
+// Data Refresh History by App Workspace
+
 [DataSource.Kind="PowerBIRESTAPI", Publish="PowerBIRESTAPI.UI"]
-shared PowerBIRESTAPI.RefreshHistory = () =>
+shared PowerBIRESTAPI.Navigation = () as table =>
+    let
+        objects = #table(
+            {"Name",       "Key",  "Data",                "ItemKind", "ItemName", "IsLeaf"},{
+            {"My Workspace",   "MyWorkspace",   MyWorkspaceNavTable(), "Table",    "Table",    false},
+            {"App Workspaces (Groups)",   "AppWorkspace",   AppWorkspacesNavTable(), "Table",    "Table",    false},
+            {"GETData",   "GETData",   PowerBIRESTAPI.GETData, "Function",    "Function",    true}
+        }),
+        NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+    in
+        NavTable;
+
+MyWorkspaceNavTable = () as table => 
+    let
+        objects = #table(
+            {"Name",  "Key",   "Data",                           "ItemKind", "ItemName", "IsLeaf"},{
+            {"Dashboards", "Dashboards", #table({"Column1"}, {{1}}), "Table",    "Table",    true},
+            {"Reports", "Reports", #table({"Column1"}, {{1}}), "Table",    "Table",    true},
+            {"Datasets", "Datasets", #table({"Column1"}, {{1}}), "Table",    "Table",    true} ,
+            {"Refresh History", "RefreshHistory", PowerBIRESTAPI.MWRefreshHistory(), "Table",    "Table",    true}
+        }),
+        NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+    in
+        NavTable;
+
+
+AppWorkspacesNavTable = () as table => 
+    let
+        objects = #table(
+            {"Name",  "Key",   "Data",                           "ItemKind", "ItemName", "IsLeaf"},{
+            {"Workspaces List", "Workspaces",  PowerBIRESTAPI.GroupsList() , "Table",    "Table",    true},
+            {"Dashboards", "Dashboards", PowerBIRESTAPI.GroupsDashboards(), "Table",    "Table",    true},
+            {"Reports", "Reports", PowerBIRESTAPI.GroupsReports(), "Table",    "Table",    true},
+            {"Datasets", "Datasets", PowerBIRESTAPI.GroupsDatasets(), "Table",    "Table",    true} ,
+            {"Refresh History", "RefreshHistory", PowerBIRESTAPI.GroupsDatasets(), "Table",    "Table",    true}
+        }),
+        NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+    in
+        NavTable;
+
+
+ [DataSource.Kind="PowerBIRESTAPI"]
+ PowerBIRESTAPI.MWRefreshHistory = () =>
 let
     source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/datasets")),
     value = Table.FromRecords(source[value]),
@@ -39,9 +84,58 @@ in
 shared PowerBIRESTAPI.GETData = (optional path as text) =>
 let
     source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg", [RelativePath = path]))
-  
 in
     source;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+ PowerBIRESTAPI.GroupsList = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups"))[value],
+    ToTable = Table.FromRecords(source),
+    columnNames = Table.RenameColumns(ToTable,{{"id", "GroupID"}, {"name", "groupName"}}),
+    DataTypes = Table.TransformColumnTypes(columnNames,{{"GroupID", type text}, {"groupName", type text}, {"isReadOnly", type logical}}),
+      members = Table.AddColumn( DataTypes, "Members", each try Table.FromRecords( Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/" & [GroupID]&"/users") ) ) otherwise null )
+    in
+    members;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+ PowerBIRESTAPI.GroupsDatasets = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups"))[value],
+    ToTable = Table.FromRecords(source),
+    columnNames = Table.RenameColumns(ToTable,{{"id", "GroupID"}, {"name", "groupName"}}),
+      members = Table.AddColumn( columnNames, "Datasets", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([GroupID])&"/datasets") )[value] ) otherwise null ),
+      Columns = Table.SelectColumns(members,{"GroupID", "Datasets"}),
+      Expanded = Table.ExpandTableColumn(Columns, "Datasets", {"id", "name", "addRowsAPIEnabled", "configuredBy"}, {"id", "name", "addRowsAPIEnabled", "configuredBy"}),
+      DataTypes = Table.TransformColumnTypes(Expanded,{{"id", type text}, {"name", type text}, {"GroupID", type text}, {"configuredBy", type text}, {"addRowsAPIEnabled", type logical}})
+    in
+    DataTypes;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+ PowerBIRESTAPI.GroupsReports = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups"))[value],
+    ToTable = Table.FromRecords(source),
+    columnNames = Table.RenameColumns(ToTable,{{"id", "GroupID"}, {"name", "groupName"}}),
+      members = Table.AddColumn( columnNames, "Reports", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([GroupID])&"/reports") )[value] ) otherwise null ),
+      Columns = Table.SelectColumns(members,{"GroupID", "Reports"}),
+      Expanded = Table.ExpandTableColumn(Columns, "Reports", {"id", "modelId", "name", "webUrl", "embedUrl", "isOwnedByMe", "isOriginalPbixReport", "datasetId"}, {"id", "modelId", "name", "webUrl", "embedUrl", "isOwnedByMe", "isOriginalPbixReport", "datasetId"}),
+      DataTypes = Table.TransformColumnTypes(Expanded,{{"id", type text}, {"name", type text}, {"webUrl", type text}, {"embedUrl", type text}, {"datasetId", type text}, {"GroupID", type text}, {"modelId", Int64.Type}, {"isOwnedByMe", type logical}, {"isOriginalPbixReport", type logical}})
+    in
+    DataTypes;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+PowerBIRESTAPI.GroupsDashboards = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups"))[value],
+    ToTable = Table.FromRecords(source),
+    columnNames = Table.RenameColumns(ToTable,{{"id", "GroupID"}, {"name", "groupName"}}),
+      members = Table.AddColumn( columnNames, "Dashboards", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([GroupID])&"/dashboards") )[value] ) otherwise null ),
+      Columns = Table.SelectColumns(members,{"GroupID", "Dashboards"}),
+      Expanded = Table.ExpandTableColumn(Columns, "Dashboards", {"id", "displayName", "isReadOnly", "embedUrl"}, {"id", "displayName", "isReadOnly", "embedUrl"}),
+      DataTypes = Table.TransformColumnTypes(Expanded,{{"id", type text}, {"displayName", type text}, {"embedUrl", type text}, {"isReadOnly", type logical}})
+    in
+    DataTypes;
 
 //
 // Data Source definition
@@ -55,7 +149,7 @@ PowerBIRESTAPI = [
             Logout=Logout
         ]
     ],
-    Label = "My Graph Connector"
+    Label = "Power BI REST API Connector"
 ];
 
 //
@@ -63,7 +157,7 @@ PowerBIRESTAPI = [
 //
 PowerBIRESTAPI.UI = [
     Beta = true,
-    ButtonText = { "PowerBIRESTAPI.Feed", "Connect to Graph" },
+    ButtonText = { "Power BI REST API", "Connect to Graph" },
     SourceImage = PBIAPI.Icons ,
     SourceTypeImage = PBIAPI.Icons 
 ];
@@ -159,6 +253,7 @@ TokenMethod = (grantType, tokenField, code) =>
     let
         queryString = [
             client_id = client_id,
+            resource = resourceUri,
             grant_type = grantType,
             redirect_uri = redirect_uri
         ],
@@ -180,3 +275,25 @@ TokenMethod = (grantType, tokenField, code) =>
     in
         result;
 
+Table.ToNavigationTable = (
+    table as table,
+    keyColumns as list,
+    nameColumn as text,
+    dataColumn as text,
+    itemKindColumn as text,
+    itemNameColumn as text,
+    isLeafColumn as text
+) as table =>
+    let
+        tableType = Value.Type(table),
+        newTableType = Type.AddTableKey(tableType, keyColumns, true) meta 
+        [
+            NavigationTable.NameColumn = nameColumn, 
+            NavigationTable.DataColumn = dataColumn,
+            NavigationTable.ItemKindColumn = itemKindColumn, 
+            Preview.DelayColumn = itemNameColumn, 
+            NavigationTable.IsLeafColumn = isLeafColumn
+        ],
+        navigationTable = Value.ReplaceType(table, newTableType)
+    in
+        navigationTable;

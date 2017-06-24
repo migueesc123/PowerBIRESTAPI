@@ -67,7 +67,7 @@
     <Compile Include="resources.resx">
       <SubType>Code</SubType>
     </Compile>
-    <Content Include="PBIAPIquery.pq">
+    <Content Include="PBIAPI.query.pq">
       <SubType>Code</SubType>
     </Content>
   </ItemGroup>
