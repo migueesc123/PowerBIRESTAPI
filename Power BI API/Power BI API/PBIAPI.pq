@@ -15,9 +15,7 @@ windowHeight = 1024;
 
 //
 // Exported function(s)
-// List of DataSets
-// Data Refresh History Personal Workspace
-// Data Refresh History by App Workspace
+//
 
 [DataSource.Kind="PowerBIRESTAPI", Publish="PowerBIRESTAPI.UI"]
 shared PowerBIRESTAPI.Navigation = () as table =>
@@ -36,9 +34,9 @@ MyWorkspaceNavTable = () as table =>
     let
         objects = #table(
             {"Name",  "Key",   "Data",                           "ItemKind", "ItemName", "IsLeaf"},{
-            {"Dashboards", "Dashboards", #table({"Column1"}, {{1}}), "Table",    "Table",    true},
-            {"Reports", "Reports", #table({"Column1"}, {{1}}), "Table",    "Table",    true},
-            {"Datasets", "Datasets", #table({"Column1"}, {{1}}), "Table",    "Table",    true} ,
+            {"Dashboards", "Dashboards", PowerBIRESTAPI.MWDashboards(), "Table",    "Table",    true},
+            {"Reports", "Reports", PowerBIRESTAPI.MWReports(), "Table",    "Table",    true},
+            {"Datasets", "Datasets", PowerBIRESTAPI.MWDatasets(), "Table",    "Table",    true} ,
             {"Refresh History", "RefreshHistory", PowerBIRESTAPI.MWRefreshHistory(), "Table",    "Table",    true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
@@ -54,7 +52,7 @@ AppWorkspacesNavTable = () as table =>
             {"Dashboards", "Dashboards", PowerBIRESTAPI.GroupsDashboards(), "Table",    "Table",    true},
             {"Reports", "Reports", PowerBIRESTAPI.GroupsReports(), "Table",    "Table",    true},
             {"Datasets", "Datasets", PowerBIRESTAPI.GroupsDatasets(), "Table",    "Table",    true} ,
-            {"Refresh History", "RefreshHistory", PowerBIRESTAPI.GroupsDatasets(), "Table",    "Table",    true}
+            {"Refresh History", "RefreshHistory", PowerBIRESTAPI.AWRefreshHistory(), "Table",    "Table",    true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
     in
@@ -76,9 +74,30 @@ let
     errorDescriptionJSON = Table.TransformColumns(refreshHistoryData,{{"serviceExceptionJson", Json.Document}}),
     replaceErrors = Table.ReplaceErrorValues(errorDescriptionJSON, {{"serviceExceptionJson", null}}),
     DataType = Table.TransformColumnTypes(replaceErrors,{{"id", type text}, {"name", type text}, {"addRowsAPIEnabled", type logical}, {"configuredBy", type text}, {"id.1", Int64.Type}, {"refreshType", type text}, {"startTime", type datetimezone}, {"endTime", type datetimezone}, {"status", type text}}),
-    NameChange = Table.RenameColumns(DataType,{{"id.1", "refreshID"}})
+    NameChange = Table.RenameColumns(DataType,{{"id.1", "refreshID"}}),
+     Filtered = Table.SelectRows(NameChange, each [refreshID] <> null and [refreshID] <> "")
 in
-    NameChange;
+    Filtered;
+
+ [DataSource.Kind="PowerBIRESTAPI"]
+ PowerBIRESTAPI.AWRefreshHistory = () =>
+let
+    source = PowerBIRESTAPI.GroupsDatasets(),
+    value = Table.SelectColumns( source, {"id","GroupID"}),
+    refreshHistory = Table.AddColumn( value, "Call", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/"&[GroupID]&"/datasets/" & [id]&"/refreshes", [
+      Headers = [
+                #"Content-type" = "application/json"
+            ]])) otherwise null),
+       ExpandrefreshHistory = Table.ExpandRecordColumn(refreshHistory, "Call", {"value"}, {"value"}),
+           ExpandToList = Table.ExpandListColumn(ExpandrefreshHistory, "value"),
+    refreshHistoryData = Table.ExpandRecordColumn(ExpandToList, "value", {"id", "refreshType", "startTime", "endTime", "serviceExceptionJson", "status"}, {"id.1", "refreshType", "startTime", "endTime", "serviceExceptionJson", "status"}),
+    errorDescriptionJSON = Table.TransformColumns(refreshHistoryData,{{"serviceExceptionJson", Json.Document}}),
+    replaceErrors = Table.ReplaceErrorValues(errorDescriptionJSON, {{"serviceExceptionJson", null}}),
+    DataType = Table.TransformColumnTypes(replaceErrors,{{"id", type text},{"id.1", Int64.Type}, {"refreshType", type text}, {"startTime", type datetimezone}, {"endTime", type datetimezone}, {"status", type text}}),
+    NameChange = Table.RenameColumns(DataType,{{"id.1", "refreshID"},{"id", "DatasetID"}}),
+    Filtered = Table.SelectRows(NameChange, each [refreshID] <> null and [refreshID] <> "")
+in
+    Filtered;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 shared PowerBIRESTAPI.GETData = (optional path as text) =>
@@ -111,6 +130,15 @@ let
     in
     DataTypes;
 
+ [DataSource.Kind="PowerBIRESTAPI"]
+PowerBIRESTAPI.MWDatasets = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/datasets"))[value],
+    ToTable = Table.FromRecords(source),
+      DataTypes = Table.TransformColumnTypes(ToTable,{{"id", type text}, {"name", type text}, {"configuredBy", type text}, {"addRowsAPIEnabled", type logical}})
+    in
+    DataTypes;
+
 [DataSource.Kind="PowerBIRESTAPI"]
  PowerBIRESTAPI.GroupsReports = () =>
 let
@@ -125,6 +153,15 @@ let
     DataTypes;
 
 [DataSource.Kind="PowerBIRESTAPI"]
+ shared PowerBIRESTAPI.MWReports = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports"))[value],
+    ToTable = Table.FromRecords(source),
+     DataTypes = Table.TransformColumnTypes(ToTable,{{"id", type text}, {"name", type text}, {"webUrl", type text}, {"embedUrl", type text}, {"datasetId", type text},  {"modelId", Int64.Type}, {"isOwnedByMe", type logical}, {"isOriginalPbixReport", type logical}})
+    in
+    DataTypes;
+
+[DataSource.Kind="PowerBIRESTAPI"]
 PowerBIRESTAPI.GroupsDashboards = () =>
 let
   source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups"))[value],
@@ -134,6 +171,15 @@ let
       Columns = Table.SelectColumns(members,{"GroupID", "Dashboards"}),
       Expanded = Table.ExpandTableColumn(Columns, "Dashboards", {"id", "displayName", "isReadOnly", "embedUrl"}, {"id", "displayName", "isReadOnly", "embedUrl"}),
       DataTypes = Table.TransformColumnTypes(Expanded,{{"id", type text}, {"displayName", type text}, {"embedUrl", type text}, {"isReadOnly", type logical}})
+    in
+    DataTypes;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+shared PowerBIRESTAPI.MWDashboards = () =>
+let
+  source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/dashboards"))[value],
+    ToTable = Table.FromRecords(source),
+    DataTypes = Table.TransformColumnTypes(ToTable,{{"id", type text}, {"displayName", type text}, {"embedUrl", type text}, {"isReadOnly", type logical}})
     in
     DataTypes;
 
@@ -157,7 +203,7 @@ PowerBIRESTAPI = [
 //
 PowerBIRESTAPI.UI = [
     Beta = true,
-    ButtonText = { "Power BI REST API", "Connect to Graph" },
+    ButtonText = { "Power BI REST API", "Connect to the Power BI REST API" },
     SourceImage = PBIAPI.Icons ,
     SourceTypeImage = PBIAPI.Icons 
 ];
