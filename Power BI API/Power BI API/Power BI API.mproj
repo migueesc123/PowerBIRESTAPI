@@ -37,37 +37,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Power_BI_API.pq">
+    <Compile Include="PBIAPI.pq">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API16.png">
+    <Compile Include="PBIAPI16.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API20.png">
+    <Compile Include="PBIAPI20.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API24.png">
+    <Compile Include="PBIAPI24.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API32.png">
+    <Compile Include="PBIAPI32.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API40.png">
+    <Compile Include="PBIAPI40.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API48.png">
+    <Compile Include="PBIAPI48.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API64.png">
+    <Compile Include="PBIAPI64.png">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Power_BI_API80.png">
+    <Compile Include="PBIAPI80.png">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="resources.resx">
       <SubType>Code</SubType>
     </Compile>
-    <Content Include="Power_BI_API.query.pq">
+    <Content Include="PBIAPIquery.pq">
       <SubType>Code</SubType>
     </Content>
   </ItemGroup>
