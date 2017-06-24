@@ -100,7 +100,24 @@ in
     Filtered;
 
 [DataSource.Kind="PowerBIRESTAPI"]
-shared PowerBIRESTAPI.GETData = (optional path as text) =>
+shared PowerBIRESTAPI.GETData =    Value.ReplaceType(GETData, GETDataType);
+
+ GETDataType = type function (
+        optional path as ( type text meta[
+        Documentation.FieldCaption = "url Path",
+        Documentation.FieldDescription = "Text string to be added to the https://api.powerbi.com/v1.0/myorg"]
+        )) as table meta [                  
+        Documentation.Name = "PowerBIRESTAPI.GETData",
+        Documentation.LongDescription = "Makes a call to the Power BI REST API and returns the raw response",
+        Documentation.Examples = {[
+            Description = "Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints. ",
+            Code = "=PowerBIRESTAPI.GETData(""datasets"")
+            Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx",
+            Result = "Raw response for all the datasets in the Personal Workspace of the authenticated user."
+        ]}
+    ]; 
+
+GETData = (optional path as text) =>
 let
     source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg", [RelativePath = path]))
 in
