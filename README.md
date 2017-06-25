@@ -1,4 +1,4 @@
-# PowerBIRESTAPI
+ # PowerBIRESTAPI
 A Microsoft Power BI Data Connector or Power Query Connector for the Power BI REST API.
 
 The goal of this connector is to enable you as an end-user to easily:
@@ -32,7 +32,7 @@ For the rest of fields, please use the options chosen in the next image:
 After filling out the fields, go ahead and click the 'Register App' button and right beneath that button you'll get your Client ID. Be sure to save that value as you'll need it later.
 
 # Step 2: Change the contents of the AppID.txt
-1. Download the pre-compiled *.mez* file here
+1. Download the pre-compiled *.mez* file here https://github.com/migueesc123/PowerBIRESTAPI/blob/master/Power%20BI%20API.mez
 2. Rename the extension of the downloaded file from *.mez* to *.zip*
 3. Unzip the file in a new folder
 4. Open the file with the name AppID.txt and replace the value found inside with the Client ID that you received before and save the file.
@@ -40,3 +40,6 @@ After filling out the fields, go ahead and click the 'Register App' button and r
 6. Place the file inside this folder C:\Users\{Username}\Documents\Microsoft Power BI Desktop\Custom Connectors
     *Note: if the folder doesn't exist, go ahead and create it. Don't forget to enable the Custom Data Connectors preview feature in your Power BI Desktop*
 7. Open Power BI Desktop and, in the Get Data window, search for the new Custom Connector.
+
+# Step 3: Provide Feedback!
+Let me know your thoughts! go to the issues section of this repo and let me know if you have any issues or suggestions for this connector.
