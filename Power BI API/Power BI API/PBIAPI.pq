@@ -32,9 +32,9 @@ shared PowerBIRESTAPI.Navigation = () as table =>
     let
         objects = #table(
             {"Name",       "Key",  "Data",                "ItemKind", "ItemName", "IsLeaf"},{
-            {"My Workspace",   "MyWorkspace",   MyWorkspaceNavTable(), "Table",    "Table",    false},
-            {"App Workspaces (Groups)",   "AppWorkspace",   AppWorkspacesNavTable(), "Table",    "Table",    false},
-            {"GETData",   "GETData",   PowerBIRESTAPI.GETData, "Function",    "Function",    true}
+            {Extension.LoadString("MyWorkspace"),   "MyWorkspace",   MyWorkspaceNavTable(), "Table",    "Table",    false},
+            {Extension.LoadString("AppWorkspace"),   "AppWorkspace",   AppWorkspacesNavTable(), "Table",    "Table",    false},
+            {Extension.LoadString("GETData"),   "GETData",   PowerBIRESTAPI.GETData, "Function",    "Function",    true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
     in
@@ -44,10 +44,10 @@ MyWorkspaceNavTable = () as table =>
     let
         objects = #table(
             {"Name",  "Key",   "Data",                           "ItemKind", "ItemName", "IsLeaf"},{
-            {"Dashboards", "Dashboards", PowerBIRESTAPI.MWDashboards(), "Table",    "Table",    true},
-            {"Reports", "Reports", PowerBIRESTAPI.MWReports(), "Table",    "Table",    true},
-            {"Datasets", "Datasets", PowerBIRESTAPI.MWDatasets(), "Table",    "Table",    true} ,
-            {"Refresh History", "RefreshHistory", PowerBIRESTAPI.MWRefreshHistory(), "Table",    "Table",    true}
+            {Extension.LoadString("Dashboards"), "Dashboards", PowerBIRESTAPI.MWDashboards(), "Table",    "Table",    true},
+            {Extension.LoadString("Reports"), "Reports", PowerBIRESTAPI.MWReports(), "Table",    "Table",    true},
+            {Extension.LoadString("Datasets"), "Datasets", PowerBIRESTAPI.MWDatasets(), "Table",    "Table",    true} ,
+            {Extension.LoadString("RefreshHistory"), "RefreshHistory", PowerBIRESTAPI.MWRefreshHistory(), "Table",    "Table",    true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
     in
@@ -58,11 +58,11 @@ AppWorkspacesNavTable = () as table =>
     let
         objects = #table(
             {"Name",  "Key",   "Data",                           "ItemKind", "ItemName", "IsLeaf"},{
-            {"Workspaces List", "Workspaces",  PowerBIRESTAPI.GroupsList() , "Table",    "Table",    true},
-            {"Dashboards", "Dashboards", PowerBIRESTAPI.GroupsDashboards(), "Table",    "Table",    true},
-            {"Reports", "Reports", PowerBIRESTAPI.GroupsReports(), "Table",    "Table",    true},
-            {"Datasets", "Datasets", PowerBIRESTAPI.GroupsDatasets(), "Table",    "Table",    true} ,
-            {"Refresh History", "RefreshHistory", PowerBIRESTAPI.AWRefreshHistory(), "Table",    "Table",    true}
+            {Extension.LoadString("Workspaces"), "Workspaces",  PowerBIRESTAPI.GroupsList() , "Table",    "Table",    true},
+            {Extension.LoadString("Dashboards"), "Dashboards", PowerBIRESTAPI.GroupsDashboards(), "Table",    "Table",    true},
+            {Extension.LoadString("Reports"), "Reports", PowerBIRESTAPI.GroupsReports(), "Table",    "Table",    true},
+            {Extension.LoadString("Datasets"), "Datasets", PowerBIRESTAPI.GroupsDatasets(), "Table",    "Table",    true} ,
+            {Extension.LoadString("RefreshHistory"), "RefreshHistory", PowerBIRESTAPI.AWRefreshHistory(), "Table",    "Table",    true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
     in
@@ -222,7 +222,7 @@ PowerBIRESTAPI = [
             Logout=Logout
         ]
     ],
-    Label = "Power BI REST API Connector"
+    Label = Extension.LoadString("DataSourceLabel") 
 ];
 
 //
@@ -230,7 +230,7 @@ PowerBIRESTAPI = [
 //
 PowerBIRESTAPI.UI = [
     Beta = true,
-    ButtonText = { "Power BI REST API", "Connect to the Power BI REST API" },
+    ButtonText = { Extension.LoadString("ButtonTitle"), Extension.LoadString("ButtonHelp") },
     SourceImage = PBIAPI.Icons ,
     SourceTypeImage = PBIAPI.Icons 
 ];
