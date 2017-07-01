@@ -26,15 +26,20 @@ windowHeight = 1024;
 //
 // Exported function(s)
 //
+MyFx = (path as text) =>
+    let 
+        mv = path
+        in
+            mv; 
 
 [DataSource.Kind="PowerBIRESTAPI", Publish="PowerBIRESTAPI.UI"]
 shared PowerBIRESTAPI.Navigation = () as table =>
     let
         objects = #table(
             {"Name",       "Key",  "Data",                "ItemKind", "ItemName", "IsLeaf"},{
-            {Extension.LoadString("MyWorkspace"),   "MyWorkspace",   MyWorkspaceNavTable(), "Table",    "Table",    false},
-            {Extension.LoadString("AppWorkspace"),   "AppWorkspace",   AppWorkspacesNavTable(), "Table",    "Table",    false},
-            {Extension.LoadString("GETData"),   "GETData",   PowerBIRESTAPI.GETData, "Function",    "Function",    true}
+            {Extension.LoadString("MyWorkspace"),   "MyWorkspace",   MyWorkspaceNavTable(), "Folder",    "MyWorkspace",    false},
+            {Extension.LoadString("AppWorkspace"),   "AppWorkspace",   AppWorkspacesNavTable(), "Folder",    "AppWorkspace",    false},
+            {"Functions",   "Functions",  FunctionsNavTable() , "Folder",    "Functions",    false}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
     in
@@ -68,6 +73,15 @@ AppWorkspacesNavTable = () as table =>
     in
         NavTable;
 
+FunctionsNavTable = () as table => 
+    let
+        objects = #table(
+            {"Name",  "Key",   "Data",                           "ItemKind", "ItemName", "IsLeaf"},{
+            {Extension.LoadString("GETData"),   "GETData",  PowerBIRESTAPI.GETData  , "Function",    "GETData",    true}
+        }),
+        NavTable = Table.ForceToNavigationTable(objects, {"Key"}, "Name", "Data", "ItemKind", "ItemName", "IsLeaf")
+    in
+        NavTable;
 
  [DataSource.Kind="PowerBIRESTAPI"]
  PowerBIRESTAPI.MWRefreshHistory = () =>
@@ -365,6 +379,28 @@ Table.ToNavigationTable = (
             NavigationTable.DataColumn = dataColumn,
             NavigationTable.ItemKindColumn = itemKindColumn, 
             Preview.DelayColumn = itemNameColumn, 
+            NavigationTable.IsLeafColumn = isLeafColumn
+        ],
+        navigationTable = Value.ReplaceType(table, newTableType)
+    in
+        navigationTable;
+
+Table.ForceToNavigationTable = (
+    table as table,
+    keyColumns as list,
+    nameColumn as text,
+    dataColumn as text,
+    itemKindColumn as text,
+    itemNameColumn as text,
+    isLeafColumn as text
+) as table =>
+    let
+        tableType = Value.Type(table),
+        newTableType = Type.AddTableKey(tableType, keyColumns, true) meta 
+        [
+            NavigationTable.NameColumn = nameColumn, 
+            NavigationTable.DataColumn = dataColumn,
+            NavigationTable.ItemKindColumn = itemKindColumn, 
             NavigationTable.IsLeafColumn = isLeafColumn
         ],
         navigationTable = Value.ReplaceType(table, newTableType)
