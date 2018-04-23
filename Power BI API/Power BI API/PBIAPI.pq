@@ -228,6 +228,7 @@ let
 // Data Source definition
 //
 PowerBIRESTAPI = [
+TestConnection = (dataSourcePath) =>  { "PowerBIRESTAPI.Navigation"},
     Authentication = [
         OAuth = [
             StartLogin=StartLogin,
