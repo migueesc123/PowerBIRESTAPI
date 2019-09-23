@@ -23,15 +23,6 @@ resourceUri = "https://analysis.windows.net/powerbi/api";
 windowWidth = 720;
 windowHeight = 1024;
 
-//
-// Exported function(s)
-//
-MyFx = (path as text) =>
-    let 
-        mv = path
-        in
-            mv; 
-
 [DataSource.Kind="PowerBIRESTAPI", Publish="PowerBIRESTAPI.UI"]
 shared PowerBIRESTAPI.Navigation = () as table =>
     let
