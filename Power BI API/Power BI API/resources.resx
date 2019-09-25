@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="AppWorkspace" xml:space="preserve">
-    <value>App Workspaces (Groups)</value>
+    <value>Workspaces</value>
   </data>
   <data name="ButtonHelp" xml:space="preserve">
     <value>Connect to Power BI API</value>
@@ -129,8 +129,20 @@
   <data name="Dashboards" xml:space="preserve">
     <value>Dashboards</value>
   </data>
+  <data name="DashboardTiles" xml:space="preserve">
+    <value>Dashboard Tiles</value>
+  </data>
   <data name="Datasets" xml:space="preserve">
     <value>Datasets</value>
+  </data>
+  <data name="Datasources" xml:space="preserve">
+    <value>Datasources</value>
+  </data>
+  <data name="Dataflows" xml:space="preserve">
+    <value>Dataflows</value>
+  </data>
+  <data name="DataflowDatasources" xml:space="preserve">
+    <value>Dataflows Datasources</value>
   </data>
   <data name="DataSourceLabel" xml:space="preserve">
     <value>Power BI API</value>
@@ -144,11 +156,26 @@
   <data name="RefreshHistory" xml:space="preserve">
     <value>Refresh History</value>
   </data>
+  <data name="RefreshSchedule" xml:space="preserve">
+    <value>Refresh Schedule</value>
+  </data>
   <data name="Reports" xml:space="preserve">
     <value>Reports</value>
   </data>
   <data name="Workspaces" xml:space="preserve">
-    <value>Workspaces List</value>
+    <value>Workspaces</value>
+  </data>
+  <data name="Workspace Users" xml:space="preserve">
+    <value>Workspace Users</value>
+  </data>
+  <data name="GatewayDataSourceUsers" xml:space="preserve">
+    <value>Gateway Data Source Users</value>
+  </data>
+  <data name="GatewayDataSources" xml:space="preserve">
+    <value>Gateway Data Sources</value>
+  </data>
+  <data name="Gateways" xml:space="preserve">
+    <value>Gateways</value>
   </data>
   <data name="GETDataCode" xml:space="preserve">
     <value>=PowerBIRESTAPI.GETData(""datasets"")

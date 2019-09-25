@@ -1,4 +1,6 @@
  # PowerBIRESTAPI
+Big thank you to https://github.com/klinejordan for contributing to this repo! 
+
 A Microsoft Power BI Data Connector or Power Query Connector for the Power BI REST API.
 
 The goal of this connector is to enable you as an end-user to easily:

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -129,8 +129,20 @@
   <data name="Dashboards" xml:space="preserve">
     <value>Paneles</value>
   </data>
+  <data name="DashboardTiles" xml:space="preserve">
+    <value>Losas de Paneles</value>
+  </data>
   <data name="Datasets" xml:space="preserve">
     <value>Conjuntos de datos</value>
+  </data>
+  <data name="Datasources" xml:space="preserve">
+    <value>Fuentes de datos</value>
+  </data>
+  <data name="Dataflows" xml:space="preserve">
+    <value>Flujos de datos</value>
+  </data>
+  <data name="DataflowDatasources" xml:space="preserve">
+    <value>Fuentes de datos de flujos de datos</value>
   </data>
   <data name="DataSourceLabel" xml:space="preserve">
     <value>Power BI API (Español)</value>
@@ -144,10 +156,22 @@
   <data name="RefreshHistory" xml:space="preserve">
     <value>Historial de actualizaciones</value>
   </data>
+  <data name="RefreshSchedule" xml:space="preserve">
+    <value>Calendario de actualizaciones</value>
+  </data>
   <data name="Reports" xml:space="preserve">
     <value>Informes</value>
   </data>
   <data name="Workspaces" xml:space="preserve">
     <value>Lista de áreas de trabajo</value>
+  </data> 
+  <data name="Workspace Users" xml:space="preserve">
+    <value>Usuarios de áreas de trabajo</value>
+  </data> 
+  <data name="Gateways" xml:space="preserve">
+    <value>Puerta de enlace</value>
+  </data>
+  <data name="Gateway Data Sources" xml:space="preserve">
+    <value>Fuentes de datos de puerta de enlace</value>
   </data>
 </root>
