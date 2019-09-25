@@ -40,23 +40,23 @@ Then follow the steps outlined below:
 
 Select the API:
 
-![Copy ApplicationID]( https://i.ibb.co/tMxxGC1/3-Adjust-In-Azure-Portal.png)
+![Select API in Azure Portal]( https://i.ibb.co/tMxxGC1/3-Adjust-In-Azure-Portal.png)
 
 Navigate to "Certificates & secrets" and click "New client secret":
 
-![Copy ApplicationID]( https://i.ibb.co/CMss69q/4-Create-New-Clien-Secret.png)
+![Certificates & secrets]( https://i.ibb.co/CMss69q/4-Create-New-Clien-Secret.png)
 
 Copy the secret and save it, as it will be used later:
 
-![Copy ApplicationID]( https://i.ibb.co/94N9YCx/5-Copy-Client-Secret.png)
+![Copy client secret]( https://i.ibb.co/94N9YCx/5-Copy-Client-Secret.png)
 
 Navigate to "Overview" and select "Redirect URIs":
 
-![Copy ApplicationID]( https://i.ibb.co/wdmFvDy/6-Add-Redirect-URL.png)
+![Overview]( https://i.ibb.co/bgjLXFn/6-Add-Redirect-URL.png)
 
 Create new "Web"-type and enter https://oauth.powerbi.com/views/oauthredirect.html  :
 
-![Copy ApplicationID]( https://i.ibb.co/NT31Cb7/7-Redirect-URL2.png)
+![Add Redirect URI]( https://i.ibb.co/NT31Cb7/7-Redirect-URL2.png)
 
 # Step 3: Change the contents of the AppID.txt
 1. Download the pre-compiled *.mez* file here https://github.com/migueesc123/PowerBIRESTAPI/blob/master/Power%20BI%20API.mez
