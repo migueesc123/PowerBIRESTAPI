@@ -1,4 +1,4 @@
-﻿///////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////
 /////////////                                                                 /////////////
 /////////////    Title: Power BI REST API Connector for Power BI              ///////////// 
@@ -14,6 +14,7 @@ section PowerBIRESTAPI;
 // OAuth configuration settings
 //
 client_id = Text.FromBinary(Extension.Contents("AppID.txt"));  // TODO: set your API client ID value in the AppID.txt file 
+client_secret = Text.FromBinary(Extension.Contents("ClientSecret.txt"));  // TODO: set your API client secret value in the ClientSecret.txt file 
 redirect_uri = "https://oauth.powerbi.com/views/oauthredirect.html";
 token_uri = "https://login.windows.net/common/oauth2/token";
 authorize_uri = "https://login.windows.net/common/oauth2/authorize";
@@ -510,6 +511,7 @@ TokenMethod = (grantType, tokenField, code) =>
     let
         queryString = [
             client_id = client_id,
+			client_secret = client_secret,
             resource = resourceUri,
             grant_type = grantType,
             redirect_uri = redirect_uri
