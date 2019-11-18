@@ -9,9 +9,10 @@ The goal of this connector is to enable you as an end-user or a tenant admin to 
     - Reports
     - Datasets
     - Dataflows
+    - Gateways
 - Retrieve a list of the members and types of access for each member inside an app workspace 'aka' Group
 - Analyze Refresh history and error codes
-![Power BI REST API Connector](https://image.ibb.co/jOcHyQ/image.png)
+![Power BI REST API Connector](https://i.ibb.co/m8tBdtM/PBIRESTAPI.png)
 
 # Power BI REST API Documentation
 Be sure to read the official documentation from Microsoft about the Power BI REST API on:
