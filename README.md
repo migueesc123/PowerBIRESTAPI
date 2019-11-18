@@ -3,11 +3,12 @@ Big thank you to https://github.com/klinejordan for contributing to this repo!
 
 A Microsoft Power BI Data Connector or Power Query Connector for the Power BI REST API.
 
-The goal of this connector is to enable you as an end-user to easily:
+The goal of this connector is to enable you as an end-user or a tenant admin to easily:
 - Create a catalogue of all the resources deployed to your tenant
     - Dashboards
     - Reports
     - Datasets
+    - Dataflows
 - Retrieve a list of the members and types of access for each member inside an app workspace 'aka' Group
 - Analyze Refresh history and error codes
 ![Power BI REST API Connector](https://image.ibb.co/jOcHyQ/image.png)

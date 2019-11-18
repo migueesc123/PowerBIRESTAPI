@@ -151,7 +151,7 @@
     <value>GETData</value>
   </data>
   <data name="MyWorkspace" xml:space="preserve">
-    <value>My Workspace</value>
+    <value>Personal Workspace</value>
   </data>
   <data name="RefreshHistory" xml:space="preserve">
     <value>Refresh History</value>
@@ -177,6 +177,36 @@
   <data name="Gateways" xml:space="preserve">
     <value>Gateways</value>
   </data>
+  <data name="GroupsAsAdmin" xml:space="preserve">
+    <value>Workspaces (Admin)</value>
+  </data>
+  <data name="GroupUsersAsAdmin" xml:space="preserve">
+    <value>Workspace Users (Admin)</value>
+  </data>
+  <data name="ReportsAsAdmin" xml:space="preserve">
+    <value>Reports (Admin)</value>
+  </data>
+  <data name="DashboardsAsAdmin" xml:space="preserve">
+    <value>Dashboards (Admin)</value>
+  </data>
+  <data name="DatasetsAsAdmin" xml:space="preserve">
+    <value>Datasets (Admin)</value>
+  </data>
+  <data name="DataflowsAsAdmin" xml:space="preserve">
+    <value>Dataflows (Admin)</value>
+  </data>
+  <data name="DatasetDatasourcesAsAdmin" xml:space="preserve">
+    <value>Dataset Datasources (Admin)</value>
+  </data>
+  <data name="DataflowDatasourcesAsAdmin" xml:space="preserve">
+    <value>Dataflow Datasources (Admin)</value>
+  </data>
+  <data name="CapacitiesAsAdmin" xml:space="preserve">
+    <value>Capacities (Admin)</value>
+  </data>
+  <data name="Admin" xml:space="preserve">
+    <value>Power BI Service Administrator</value>
+  </data>
   <data name="GETDataCode" xml:space="preserve">
     <value>=PowerBIRESTAPI.GETData(""datasets"")
             Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
@@ -189,5 +219,20 @@
   </data>
   <data name="GETDataResult" xml:space="preserve">
     <value>Raw response for all the datasets in the Personal Workspace of the authenticated user.</value>
+  </data>
+  <data name="PersonalDashboards" xml:space="preserve">
+    <value>Dashboards (Personal)</value>
+  </data>
+  <data name="PersonalDatasets" xml:space="preserve">
+    <value>Datasets (Personal)</value>
+  </data>
+  <data name="PersonalRefreshHistory" xml:space="preserve">
+    <value>Refresh History (Personal)</value>
+  </data>
+  <data name="PersonalReports" xml:space="preserve">
+    <value>Reports (Personal)</value>
+  </data>
+  <data name="PersonalApps" xml:space="preserve">
+    <value>Apps (Personal)</value>
   </data>
 </root>

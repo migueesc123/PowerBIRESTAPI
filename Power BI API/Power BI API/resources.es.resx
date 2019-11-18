@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="Admin" xml:space="preserve">
+    <value>Administrador de Servicios de Power BI</value>
+  </data>
   <data name="AppWorkspace" xml:space="preserve">
     <value>Áreas de trabajo de la aplicación (Grupos)</value>
   </data>
@@ -126,32 +129,90 @@
   <data name="ButtonTitle" xml:space="preserve">
     <value>Power BI API (Español)</value>
   </data>
+  <data name="CapacitiesAsAdmin" xml:space="preserve">
+    <value>Capacidades (Admin)</value>
+  </data>
   <data name="Dashboards" xml:space="preserve">
     <value>Paneles</value>
+  </data>
+  <data name="DashboardsAsAdmin" xml:space="preserve">
+    <value>Paneles (Admin)</value>
   </data>
   <data name="DashboardTiles" xml:space="preserve">
     <value>Losas de Paneles</value>
   </data>
-  <data name="Datasets" xml:space="preserve">
-    <value>Conjuntos de datos</value>
+  <data name="DataflowDatasources" xml:space="preserve">
+    <value>Fuentes de datos de flujos de datos</value>
   </data>
-  <data name="Datasources" xml:space="preserve">
-    <value>Fuentes de datos</value>
+  <data name="DataflowDatasourcesAsAdmin" xml:space="preserve">
+    <value>Fuentes de datos de flujos de datos (Admin)</value>
   </data>
   <data name="Dataflows" xml:space="preserve">
     <value>Flujos de datos</value>
   </data>
-  <data name="DataflowDatasources" xml:space="preserve">
-    <value>Fuentes de datos de flujos de datos</value>
+  <data name="DataflowsAsAdmin" xml:space="preserve">
+    <value>Flujos de datos (Admin)</value>
+  </data>
+  <data name="DatasetDatasourcesAsAdmin" xml:space="preserve">
+    <value>Fuentes de datos de conjuntos de datos (Admin)</value>
+  </data>
+  <data name="Datasets" xml:space="preserve">
+    <value>Conjuntos de datos</value>
+  </data>
+  <data name="DatasetsAsAdmin" xml:space="preserve">
+    <value>Conjuntos de datos (Admin)</value>
   </data>
   <data name="DataSourceLabel" xml:space="preserve">
     <value>Power BI API (Español)</value>
   </data>
+  <data name="Datasources" xml:space="preserve">
+    <value>Fuentes de datos</value>
+  </data>
+  <data name="GatewayDataSources" xml:space="preserve">
+    <value>Fuentes de datos de puerta de enlace</value>
+  </data>
+  <data name="GatewayDataSourceUsers" xml:space="preserve">
+    <value>Usarios de fuentes de datos de puerta de enlace</value>
+  </data>
+  <data name="Gateways" xml:space="preserve">
+    <value>Puerta de enlace</value>
+  </data>
   <data name="GETData" xml:space="preserve">
     <value>GETDatos</value>
   </data>
+  <data name="GETDataCode" xml:space="preserve">
+    <value>=PowerBIRESTAPI.GETData("datasets")
+            Obtenga la documentación completa en https://msdn.microsoft.com/es-es/library/dn877544.aspx</value>
+  </data>
+  <data name="GETDataDescription" xml:space="preserve">
+    <value>Devuelve datos sin procesar de cualquiera de los https://api.powerbi.com/v1.0/myorg puntos finales.</value>
+  </data>
+  <data name="GETDataLongDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GETDataResult" xml:space="preserve">
+    <value>Respuesta sin formato para todos los conjuntos de datos en el área de trabajo personal del usuario autenticado.</value>
+  </data>
+  <data name="GroupsAsAdmin" xml:space="preserve">
+    <value>Áreas de trabajo (Admin)</value>
+  </data>
+  <data name="GroupUsersAsAdmin" xml:space="preserve">
+    <value>Usarios de áreas de trabajo (Admin)</value>
+  </data>
   <data name="MyWorkspace" xml:space="preserve">
     <value>Mi área de trabajo</value>
+  </data>
+  <data name="PersonalDashboards" xml:space="preserve">
+    <value>Mis paneles</value>
+  </data>
+  <data name="PersonalDatasets" xml:space="preserve">
+    <value>Mis conjuntos de datos</value>
+  </data>
+  <data name="PersonalRefreshHistory" xml:space="preserve">
+    <value>Mi historial de actualizaciones</value>
+  </data>
+  <data name="PersonalReports" xml:space="preserve">
+    <value>Mis informes</value>
   </data>
   <data name="RefreshHistory" xml:space="preserve">
     <value>Historial de actualizaciones</value>
@@ -162,16 +223,16 @@
   <data name="Reports" xml:space="preserve">
     <value>Informes</value>
   </data>
-  <data name="Workspaces" xml:space="preserve">
-    <value>Lista de áreas de trabajo</value>
-  </data> 
+  <data name="ReportsAsAdmin" xml:space="preserve">
+    <value>Informes (Admin)</value>
+  </data>
   <data name="Workspace Users" xml:space="preserve">
     <value>Usuarios de áreas de trabajo</value>
-  </data> 
-  <data name="Gateways" xml:space="preserve">
-    <value>Puerta de enlace</value>
   </data>
-  <data name="Gateway Data Sources" xml:space="preserve">
-    <value>Fuentes de datos de puerta de enlace</value>
+  <data name="Workspaces" xml:space="preserve">
+    <value>Lista de áreas de trabajo</value>
+  </data>
+  <data name="PersonalApps" xml:space="preserve">
+    <value>Mis aplicaciones</value>
   </data>
 </root>
