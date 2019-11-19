@@ -454,7 +454,8 @@ let
 	Columns2 = Table.SelectColumns(Expanded,{"Gateway ID", "Gateway Datasource ID"}),
 	members2 = Table.AddColumn(Columns2, "Gateway Data Source Users", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/" & Text.From([Gateway ID])&"/datasources/" & Text.From([Gateway Datasource ID])& "/users"))[value] ) otherwise null ),
 	Expanded2 = Table.ExpandTableColumn(members2, "Gateway Data Source Users", {"emailAddress", "datasourceAccessRight", "displayName", "identifier", "principalType"}, {"Data Source User Email Address", "Data Source Permission Level", "Data Source User Name", "Data Source User Identifier", "Data Source User Type"}),
-	ChangeType = Table.TransformColumnTypes(Expanded2,{{"Data Source User Type", type text}, {"Data Source User Identifier", type text}, {"Data Source User Name", type text}, {"Data Source Permission Level", type text}, {"Data Source User Email Address", type text}, {"Gateway Datasource ID", type text}, {"Gateway ID", type text}})
+        filterNoDataSource = Table.SelectRows(Expanded2, each ([Gateway Datasource ID] <> null)),
+	ChangeType = Table.TransformColumnTypes(filterNoDataSource,{{"Data Source User Type", type text}, {"Data Source User Identifier", type text}, {"Data Source User Name", type text}, {"Data Source Permission Level", type text}, {"Data Source User Email Address", type text}, {"Gateway Datasource ID", type text}, {"Gateway ID", type text}})
 in
 	ChangeType;
 
