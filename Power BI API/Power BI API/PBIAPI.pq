@@ -108,11 +108,36 @@ FunctionsNavTable = () as table =>
 let
 	objects = #table(
             {"Name","Key","Data","ItemKind","ItemName","IsLeaf"},{
-            {Extension.LoadString("GETData"),"GETData",PowerBIRESTAPI.GETData,"Function","GETData",true}
+            {Extension.LoadString("GETData"),"GETData",PowerBIRESTAPI.GETData,"Function","GETData",true},
+            {"Activity Log", "ActivityLog", PowerBIRESTAPI.ActivityLog , "Function", "GetActivityLog", true}
         }),
 	NavTable = Table.ForceToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
 	NavTable;
+
+PowerBIRESTAPI.ActivityLog = (startdate as date, enddate as date) =>
+    let
+    Custom2 = List.Dates(startdate, Number.From(enddate - startdate ) + 1, Duration.From(1) ),
+    Custom3 = List.Transform( Custom2, DateTime.From),
+    Custom4 = List.Transform(Custom3,each DateTime.ToText(_,"yyyy-MM-ddTHH:mm:ss")),
+    Custom5 = List.Transform( Custom3, each _ + #duration(0,23,59,59)),
+    Custom6 = List.Transform(Custom5,each DateTime.ToText(_,"yyyy-MM-ddTHH:mm:ss")),
+    Custom7 = List.Zip({Custom4, Custom6 } ),
+    Custom8 = List.Transform( Custom7, each "https://api.powerbi.com/v1.0/myorg/admin/activityevents?startDateTime='"& _{0} &"'&endDateTime='" & _{1}&"'"),
+    GetData = List.Combine( List.Transform( Custom8,  GetActivityLog) ),
+    TransformedData = Table.FromRecords( List.Combine(GetData), null, MissingField.UseNull)
+in
+    TransformedData;
+
+GetActivityLog = (url as text) =>
+    let
+       Pagination = List.Generate( ()=>
+            [Call = Json.Document( Web.Contents(url)), next= try Call[continuationUri] otherwise null, Data = try Call[activityEventEntities] otherwise null],
+            each [next] <> null and [Data] <> null, 
+            each [Call = Json.Document( Web.Contents([next])), next= try Call[continuationUri] otherwise null, Data = try Call[activityEventEntities] otherwise null],
+            each [Data])
+            in
+                Pagination;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.MWRefreshHistory = () => 
@@ -752,7 +777,6 @@ TokenMethod = (grantType, tokenField, code) =>
     let
         queryString = [
             client_id = client_id,
-			client_secret = client_secret,
             resource = resourceUri,
             grant_type = grantType,
             redirect_uri = redirect_uri
