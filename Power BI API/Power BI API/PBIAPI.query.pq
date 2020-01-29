@@ -1,5 +1,5 @@
 ﻿// Use this file to write queries to test your data connector
 let
-    result =  PowerBIRESTAPI.GETData ("dashboards")
-in
-    result
+    x= PowerBIRESTAPI.EventActivityLog (#date(2019, 12, 27), #date(2019, 12, 31))
+    in
+        x

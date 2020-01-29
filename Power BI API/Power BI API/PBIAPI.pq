@@ -13,8 +13,11 @@ section PowerBIRESTAPI;
 //
 // OAuth configuration settings
 //
+
 client_id = Text.FromBinary(Extension.Contents("AppID.txt"));  
+
 client_secret = Text.FromBinary(Extension.Contents("ClientSecret.txt"));
+
 redirect_uri = "https://oauth.powerbi.com/views/oauthredirect.html";
 token_uri = "https://login.windows.net/common/oauth2/token";
 authorize_uri = "https://login.windows.net/common/oauth2/authorize";
@@ -109,13 +112,33 @@ let
 	objects = #table(
             {"Name","Key","Data","ItemKind","ItemName","IsLeaf"},{
             {Extension.LoadString("GETData"),"GETData",PowerBIRESTAPI.GETData,"Function","GETData",true},
-            {"Activity Log", "ActivityLog", PowerBIRESTAPI.ActivityLog , "Function", "GetActivityLog", true}
+            {"Event Activity Log", "EventActivityLog", PowerBIRESTAPI.EventActivityLog , "Function", "GetActivityLog", true}
         }),
 	NavTable = Table.ForceToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
 	NavTable;
 
-PowerBIRESTAPI.ActivityLog = (startdate as date, enddate as date) =>
+
+PowerBIRESTAPI.EventActivityLog = Value.ReplaceType(ActivityLogPagination,ActivityLogType);
+
+ActivityLogType =type function (
+        startdate as ( type date meta[
+        Documentation.FieldCaption = "Start Date",
+        Documentation.FieldDescription = "Start date of your query"]),
+        enddate as ( type date meta[
+        Documentation.FieldCaption = "End Date",
+        Documentation.FieldDescription = "End date of your query"])) as table meta [                  
+        Documentation.Name = "PowerBIRESTAPI.ActivityLog",
+        Documentation.LongDescription = "Makes a call to the Power BI REST API Event Activity Log endpoint and returns the full response for the given date range",
+        Documentation.Examples = {[
+            Description = "Makes a call to the Power BI REST API Event Activity Log endpoint and returns the full response for the given date range",
+            Code = "=PowerBIRESTAPI.ActivityLog(#date(2020,1,1), #date(2020,1,9))
+            Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx",
+            Result = "Table response for all event activity logs in the given date range"
+        ]}
+    ];
+
+ActivityLogPagination = (startdate as date, enddate as date) =>
     let
     Custom2 = List.Dates(startdate, Number.From(enddate - startdate ) + 1, Duration.From(1) ),
     Custom3 = List.Transform( Custom2, DateTime.From),
@@ -777,6 +800,7 @@ TokenMethod = (grantType, tokenField, code) =>
     let
         queryString = [
             client_id = client_id,
+            client_secret = client_secret,
             resource = resourceUri,
             grant_type = grantType,
             redirect_uri = redirect_uri
