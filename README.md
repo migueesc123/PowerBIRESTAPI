@@ -32,6 +32,8 @@ You'll need to fill out the form in that page and please use the following value
 For the rest of fields, please use the options chosen in the next image: 
 ![Register an App form](https://i.ibb.co/Trn7XTz/1-Register.png)
 
+*PLEASE NOTE THAT IF YOU PLAN TO USE THE ADMIN API CALLS - YOU MUST ADD AN ADDITIONAL PERMISSION LEVEL NOT AVAILABLE IN THE APP REGISTRATION WIZARD. TO USE THE ADMIN API CALLS, OPEN THE APP REGISRATION IN AZURE PORTAL AND ALLOW "Tenant.Read.All" IN THE API PERMISSIONS PANE*
+
 After filling out the fields, go ahead and click the 'Register App' button and right beneath that button you'll get your Application ID. Be sure to save that value as you'll need it later.
 ![Copy ApplicationID](https://i.ibb.co/jGnkq8G/2-Copy-App-Id.png)
 
