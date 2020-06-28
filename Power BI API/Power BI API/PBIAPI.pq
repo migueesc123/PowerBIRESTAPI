@@ -148,7 +148,7 @@ ActivityLogPagination = (startdate as date, enddate as date) =>
     Custom7 = List.Zip({Custom4, Custom6 } ),
     Custom8 = List.Transform( Custom7, each "https://api.powerbi.com/v1.0/myorg/admin/activityevents?startDateTime='"& _{0} &"'&endDateTime='" & _{1}&"'"),
     GetData = List.Combine( List.Transform( Custom8,  GetActivityLog) ),
-    TransformedData = Table.FromRecords( List.Combine(GetData), null, MissingField.UseNull)
+    TransformedData = Table.Combine( List.Transform( List.Combine(GetData), each Table.FromRecords({_})) )
 in
     TransformedData;
 
