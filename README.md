@@ -69,7 +69,7 @@ Create new "Web"-type and enter https://oauth.powerbi.com/views/oauthredirect.ht
 4. Open the file with the name AppID.txt and replace the value found inside with the Application ID that you received before and save the file.
 5. Open the file with the name ClientSecret.txt and replace the value found inside with the Client Secret that you received before and save the file.
 5. Select all the files inside the unzipped folder and zip it again, but now change the extension from *.zip* to *.mez*
-6. Place the file inside this folder C:\Users\{Username}\Documents\Microsoft Power BI Desktop\Custom Connectors
+6. Place the file inside this folder ```C:\Users\{Username}\Documents\Microsoft Power BI Desktop\Custom Connectors```
     *Note: if the folder doesn't exist, go ahead and create it. Don't forget to enable the Custom Data Connectors preview feature in your Power BI Desktop*
 7. Open Power BI Desktop and, in the Get Data window, search for the new Custom Connector.
 
