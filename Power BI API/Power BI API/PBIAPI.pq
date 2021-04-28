@@ -249,13 +249,13 @@ in
 	source;
 
 [DataSource.Kind="PowerBIRESTAPI"]
-shared PowerBIRESTAPI.GETRawData = Value.ReplaceType(GETData, GETDataType);
+shared PowerBIRESTAPI.GETRawData = Value.ReplaceType(GETRawData, GETRawDataType);
 
 	GETRawDataType = type function (
         optional path as ( type text meta[
         Documentation.FieldCaption = "url Path",
         Documentation.FieldDescription = "Text string to be added to the https://api.powerbi.com/v1.0/myorg"])) as table meta [                  
-        Documentation.Name = "PowerBIRESTAPI.GETData",
+        Documentation.Name = "PowerBIRESTAPI.GETRawData",
         Documentation.LongDescription = "Makes a call to the Power BI REST API and returns the raw response",
         Documentation.Examples = {[
             Description = "Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints. ",
@@ -265,11 +265,7 @@ shared PowerBIRESTAPI.GETRawData = Value.ReplaceType(GETData, GETDataType);
         ]}
     ]; 
 
-GETRawData = (optional path as text) =>
-let
-	source = Web.Contents("https://api.powerbi.com/v1.0/myorg", [RelativePath = path,ManualStatusHandling = {400}])
-in
-	source;
+GETRawData = (optional path as text) => let source = Web.Contents("https://api.powerbi.com/v1.0/myorg",[RelativePath = path,ManualStatusHandling = {400}]) in source;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 shared	PowerBIRESTAPI.GroupsList = () =>
