@@ -680,8 +680,8 @@ in
 let
 	source = PowerBIRESTAPI.CapacitiesAsAdmin(),
 	trimColumns = Table.SelectColumns(source,{"Capacity ID"}),
-	apiCall = Table.AddColumn(trimColumns, "Capacity Refreshables", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/capacities/" & Text.From([Capacity ID])&"/refreshables?$expand=group") )[value] ) otherwise null ),
-    expandCapacityRefreshables = Table.ExpandTableColumn(apiCall, "Capacity Refreshables", {"id", "name", "kind", "lastRefresh", "refreshSchedule", "configuredBy", "capacity", "group"}, {"Capacity Refreshable ID", "Capacity Refreshable Name", "Capacity Refreshable Kind", "lastRefresh", "refreshSchedule", "configuredBy", "capacity", "group"}),
+    apiCall = Table.AddColumn(trimColumns, "Capacity Refreshables", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/capacities/" & Text.From([Capacity ID])&"/refreshables?$expand=group"))[value],{"id", "name", "kind", "lastRefresh", "refreshSchedule", "configuredBy", "group"},MissingField.UseNull) otherwise null ),
+    expandCapacityRefreshables = Table.ExpandTableColumn(apiCall, "Capacity Refreshables", {"id", "name", "kind", "lastRefresh", "refreshSchedule", "configuredBy", "group"}, {"Capacity Refreshable ID", "Capacity Refreshable Name", "Capacity Refreshable Kind", "lastRefresh", "refreshSchedule", "configuredBy", "group"}),
     filterNoRefreshables = Table.SelectRows(expandCapacityRefreshables, each ([Capacity Refreshable ID] <> null)),
     expandRefreshSchedule = Table.ExpandRecordColumn(filterNoRefreshables, "refreshSchedule", {"days", "times", "enabled", "localTimeZoneId", "notifyOption"}, {"Refresh Schedule Days", "Refresh Schedule Times", "Refresh Enabled", "Time Zone", "Notify Option"}),
     extractedDays = Table.TransformColumns(expandRefreshSchedule, {"Refresh Schedule Days", each Text.Combine(List.Transform(_, Text.From), ","), type text}),
