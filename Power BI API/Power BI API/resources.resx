@@ -241,6 +241,9 @@
   <data name="GatewayDataSourceStatus" xml:space="preserve">
     <value>Gateway Data Source Status</value>
   </data>
+  <data name="CapacityRefreshablesAsAdmin" xml:space="preserve">
+    <value>Capacity Refreshables (Admin)</value>
+  </data>
   <data name="GETRawData" xml:space="preserve">
     <value>GETRawData</value>
   </data>

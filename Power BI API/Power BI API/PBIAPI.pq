@@ -99,7 +99,8 @@ let
             {Extension.LoadString("ReportsAsAdmin"),"ReportsAsAdmin",PowerBIRESTAPI.ReportsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DashboardsAsAdmin"),"DashboardsAsAdmin",PowerBIRESTAPI.DashboardsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowsAsAdmin"),"DataflowsAsAdmin",PowerBIRESTAPI.DataflowsAsAdmin(),"Table","Table",true},
-            {Extension.LoadString("CapacitiesAsAdmin"),"CapacitiesAsAdmin",PowerBIRESTAPI.CapacitiesAsAdmin(),"Table","Table",true}
+            {Extension.LoadString("CapacitiesAsAdmin"),"CapacitiesAsAdmin",PowerBIRESTAPI.CapacitiesAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("CapacityRefreshablesAsAdmin"),"CapacityRefreshablesAsAdmin",PowerBIRESTAPI.CapacityRefreshablesAsAdmin(),"Table","Table",true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
@@ -238,7 +239,7 @@ shared PowerBIRESTAPI.GETData = Value.ReplaceType(GETData, GETDataType);
             Description = "Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints. ",
             Code = "=PowerBIRESTAPI.GETData(""datasets"")
             Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx",
-            Result = "Raw response for all the datasets in the Personal Workspace of the authenticated user."
+            Result = "JSON response for all the datasets in the Personal Workspace of the authenticated user."
         ]}
     ]; 
 
@@ -652,7 +653,6 @@ let
 in
 	changeType;
 
-
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.DataflowsAsAdmin = () =>
 let
@@ -674,6 +674,37 @@ let
 	changeType = Table.TransformColumnTypes(expandRecords,{{"Capacity ID", type text}, {"Capacity Name", type text}, {"Capacity SKU", type text}, {"Capacity State", type text}, {"Capacity Region", type text}})
 in
 	changeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.CapacityRefreshablesAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.CapacitiesAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Capacity ID"}),
+	apiCall = Table.AddColumn(trimColumns, "Capacity Refreshables", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/capacities/" & Text.From([Capacity ID])&"/refreshables?$expand=group") )[value] ) otherwise null ),
+    expandCapacityRefreshables = Table.ExpandTableColumn(apiCall, "Capacity Refreshables", {"id", "name", "kind", "lastRefresh", "refreshSchedule", "configuredBy", "capacity", "group"}, {"Capacity Refreshable ID", "Capacity Refreshable Name", "Capacity Refreshable Kind", "lastRefresh", "refreshSchedule", "configuredBy", "capacity", "group"}),
+    filterNoRefreshables = Table.SelectRows(expandCapacityRefreshables, each ([Capacity Refreshable ID] <> null)),
+    expandRefreshSchedule = Table.ExpandRecordColumn(filterNoRefreshables, "refreshSchedule", {"days", "times", "enabled", "localTimeZoneId", "notifyOption"}, {"Refresh Schedule Days", "Refresh Schedule Times", "Refresh Enabled", "Time Zone", "Notify Option"}),
+    extractedDays = Table.TransformColumns(expandRefreshSchedule, {"Refresh Schedule Days", each Text.Combine(List.Transform(_, Text.From), ","), type text}),
+    replaceEveryday = Table.ReplaceValue(extractedDays,"Sunday,Monday,Tuesday,Wednesday,Thursday,Friday,Saturday","Everyday",Replacer.ReplaceText,{"Refresh Schedule Days"}),
+    replacedWeekday = Table.ReplaceValue(replaceEveryday,"Monday,Tuesday,Wednesday,Thursday,Friday","Every Weekday",Replacer.ReplaceText,{"Refresh Schedule Days"}),
+    extractedTimes = Table.TransformColumns(replacedWeekday, {"Refresh Schedule Times", each Text.Combine(List.Transform(_, Text.From), ","), type text}),
+    expandConfiguredBy = Table.ExpandListColumn(extractedTimes, "configuredBy"),
+    expandGroup = Table.ExpandRecordColumn(expandConfiguredBy, "group", {"id"}, {"Workspace ID"}),
+    expandLastRefresh = Table.ExpandRecordColumn(expandGroup, "lastRefresh", {"id", "refreshType", "startTime", "endTime", "serviceExceptionJson", "status", "requestId"}, {"Last Refresh ID", "Last Refresh Type", "Last Refresh Start Time", "Last Refresh End Time", "serviceExceptionJson", "Last Refresh Status", "Last Refresh Request ID"}),
+    #"Parsed JSON" = Table.TransformColumns(expandLastRefresh,{{"serviceExceptionJson", Json.Document}}),
+    #"Replaced Errors" = Table.ReplaceErrorValues(#"Parsed JSON", {{"serviceExceptionJson", null}}),
+    #"Expanded serviceExceptionJson" = Table.ExpandRecordColumn(#"Replaced Errors", "serviceExceptionJson", {"error"}, {"error"}),
+    #"Expanded error" = Table.ExpandRecordColumn(#"Expanded serviceExceptionJson", "error", {"code", "pbi.error"}, {"Last Refresh Error Code", "pbi.error"}),
+    #"Expanded pbi.error" = Table.ExpandRecordColumn(#"Expanded error", "pbi.error", {"details"}, {"details"}),
+    #"Expanded details2" = Table.ExpandListColumn(#"Expanded pbi.error", "details"),
+    #"Expanded details1" = Table.ExpandRecordColumn(#"Expanded details2", "details", {"code", "detail"}, {"Last Refresh Error Label", "detail"}),
+    #"Filtered Rows" = Table.SelectRows(#"Expanded details1", each ([Last Refresh Error Label] <> "ActivityIdText" and [Last Refresh Error Label] <> "ClusterUriText" and [Last Refresh Error Label] <> "RequestIdText" and [Last Refresh Error Label] <> "TimestampText")),
+    #"Expanded detail" = Table.ExpandRecordColumn(#"Filtered Rows", "detail", {"value"}, {"Last Refresh Error Value"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Expanded detail",{{"Capacity Refreshable ID", type text}, {"Capacity Refreshable Name", type text}, {"Capacity Refreshable Kind", type text}, {"Last Refresh Type", type text}, {"Last Refresh Status", type text}, {"Last Refresh Request ID", type text}, {"Refresh Schedule Days", type text}, {"Refresh Schedule Times", type text}, {"Time Zone", type text}, {"Notify Option", type text}, {"configuredBy", type text}, {"Workspace ID", type text}, {"Last Refresh ID", Int64.Type}, {"Last Refresh Start Time", type datetimezone}, {"Last Refresh End Time", type datetimezone}, {"Last Refresh Error Code", type text}, {"Last Refresh Error Label", type text}, {"Last Refresh Error Value", type text}, {"Refresh Enabled", type text}}),
+    #"Replaced Value" = Table.ReplaceValue(#"Changed Type","false","No",Replacer.ReplaceText,{"Refresh Enabled"}),
+    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","true","Yes",Replacer.ReplaceText,{"Refresh Enabled"})
+in
+    #"Replaced Value1";
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.DatasetDatasourcesAsAdmin = () =>

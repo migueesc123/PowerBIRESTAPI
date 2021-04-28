@@ -241,6 +241,9 @@
   <data name="GatewayDataSourceStatus" xml:space="preserve">
     <value>Estado de la de fuentes de datos de puerta de enlace</value>
   </data>
+  <data name="CapacityRefreshablesAsAdmin" xml:space="preserve">
+    <value>Contenido de los capacidades (Admin)</value>
+  </data>
   <data name="GETRawData" xml:space="preserve">
     <value>GETDatosCrudos</value>
   </data>
