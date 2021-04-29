@@ -14,6 +14,8 @@ The goal of this connector is to enable you as an end-user or a tenant admin to 
 - Analyze Refresh history and error codes
 ![Power BI REST API Connector](https://i.ibb.co/m8tBdtM/PBIRESTAPI.png)
 
+Some API end points perform poorly on large tenants, and as such we have included those in an "Experimental" folder as we cannot guarantee performance of these queries. 
+
 # Power BI REST API Documentation
 Be sure to read the official documentation from Microsoft about the Power BI REST API on:
 https://msdn.microsoft.com/library/dn877544.aspx

@@ -136,7 +136,7 @@
     <value>Datasets</value>
   </data>
   <data name="Datasources" xml:space="preserve">
-    <value>Datasources</value>
+    <value>Dataset Datasources</value>
   </data>
   <data name="Dataflows" xml:space="preserve">
     <value>Dataflows</value>
@@ -212,7 +212,7 @@
             Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
   </data>
   <data name="GETDataDescription" xml:space="preserve">
-    <value>Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints.</value>
+    <value>Returns raw JSON from any of the https://api.powerbi.com/v1.0/myorg endpoints.</value>
   </data>
   <data name="GETDataLongDescription" xml:space="preserve">
     <value />
@@ -234,5 +234,29 @@
   </data>
   <data name="PersonalApps" xml:space="preserve">
     <value>Apps (Personal)</value>
+  </data>
+  <data name="Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="GatewayDataSourceStatus" xml:space="preserve">
+    <value>Gateway Data Source Status</value>
+  </data>
+  <data name="CapacityRefreshablesAsAdmin" xml:space="preserve">
+    <value>Capacity Refreshables (Admin)</value>
+  </data>
+  <data name="GETRawData" xml:space="preserve">
+    <value>GETRawData</value>
+  </data>
+  <data name="GETRawDataCode" xml:space="preserve">
+    <value>=PowerBIRESTAPI.GETRawData(""datasets"") Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
+  </data>
+  <data name="GETRawDataDescription" xml:space="preserve">
+    <value>Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints.</value>
+  </data>
+  <data name="GETRawDataLongDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GETRawDataResult" xml:space="preserve">
+    <value>Raw response for all the datasets in the Personal Workspace of the authenticated user.</value>
   </data>
 </root>

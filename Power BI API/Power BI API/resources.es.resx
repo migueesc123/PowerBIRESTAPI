@@ -166,7 +166,7 @@
     <value>Power BI API (Español)</value>
   </data>
   <data name="Datasources" xml:space="preserve">
-    <value>Fuentes de datos</value>
+    <value>Fuentes de datos de conjuntos de datos</value>
   </data>
   <data name="GatewayDataSources" xml:space="preserve">
     <value>Fuentes de datos de puerta de enlace</value>
@@ -234,5 +234,30 @@
   </data>
   <data name="PersonalApps" xml:space="preserve">
     <value>Mis aplicaciones</value>
+  </data>
+  <data name="Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="GatewayDataSourceStatus" xml:space="preserve">
+    <value>Estado de la de fuentes de datos de puerta de enlace</value>
+  </data>
+  <data name="CapacityRefreshablesAsAdmin" xml:space="preserve">
+    <value>Contenido de los capacidades (Admin)</value>
+  </data>
+  <data name="GETRawData" xml:space="preserve">
+    <value>GETDatosCrudos</value>
+  </data>
+  <data name="GETRawDataCode" xml:space="preserve">
+    <value>=PowerBIRESTAPI.GETData("datasets")
+            Obtenga la documentación completa en https://msdn.microsoft.com/es-es/library/dn877544.aspx</value>
+  </data>
+  <data name="GETRawDataDescription" xml:space="preserve">
+    <value>Devuelve datos sin procesar de cualquiera de los https://api.powerbi.com/v1.0/myorg puntos finales.</value>
+  </data>
+  <data name="GETRawDataLongDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GETRawDataResult" xml:space="preserve">
+    <value>Respuesta sin formato para todos los conjuntos de datos en el área de trabajo personal del usuario autenticado.</value>
   </data>
 </root>
