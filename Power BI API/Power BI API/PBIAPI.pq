@@ -497,19 +497,12 @@ let
 	members = Table.AddColumn(columnNames, "Gateway Data Sources", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/" & Text.From([Gateway ID])&"/datasources") )[value] ) otherwise null ),
 	Columns = Table.SelectColumns(members,{"Gateway ID", "Gateway Data Sources"}),
 	Expanded = Table.ExpandTableColumn(Columns, "Gateway Data Sources", {"id"}, {"Gateway Datasource ID"}),
-	datasources = Table.AddColumn(Expanded, "Status", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/"&[Gateway ID]&"/datasources/"&[Gateway Datasource ID]&"/status",[ManualStatusHandling = {400}]),65001) otherwise null),
-    filterToErrors = Table.SelectRows(datasources, each ([Status] <> null)),
-    expandStatus = Table.ExpandRecordColumn(filterToErrors, "Status", {"error"}, {"error"}),
-    expandError = Table.ExpandRecordColumn(expandStatus, "error", {"code", "pbi.error"}, {"Error Code", "error.pbi.error"}),
-    expandErrorDetail = Table.ExpandRecordColumn(expandError, "error.pbi.error", {"details"}, {"details"}),
-    expandErrorDetailList = Table.ExpandListColumn(expandErrorDetail, "details"),
-    expandErrorDetailValues = Table.ExpandRecordColumn(expandErrorDetailList, "details", {"code", "detail"}, {"error.pbi.error.details.code", "error.pbi.error.details.detail"}),
-    filterToMessages = Table.SelectRows(expandErrorDetailValues, each ([error.pbi.error.details.code] = "DM_ErrorDetailNameCode_UnderlyingErrorMessage")),
-    expandErrorDetailValue = Table.ExpandRecordColumn(filterToMessages, "error.pbi.error.details.detail", {"value"}, {"Error Value"}),
-    removeColumns = Table.SelectColumns(expandErrorDetailValue,{"Gateway ID", "Gateway Datasource ID", "Error Code", "Error Value"}),
-    changeType = Table.TransformColumnTypes(removeColumns,{{"Gateway ID", type text}, {"Gateway Datasource ID", type text}, {"Error Value", type text}, {"Error Code", type text}})
+	datasources = Table.AddColumn(Expanded, "Status", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/"&[Gateway ID]&"/datasources/"&[Gateway Datasource ID]&"/status",[ManualStatusHandling = {400}]),65001) otherwise "ok"),
+        details = Table.AddColumn(datasources, "Details", each try List.Select([Status][error][pbi.error][details], each _[code] ="DM_ErrorDetailNameCode_UnderlyingErrorMessage"){0}[detail][value] otherwise null),
+        ChangedType = Table.TransformColumnTypes(details,{{"Status", type text}}),
+        ModifiedStatus = Table.ReplaceErrorValues(ChangedType, {{"Status", "error"}})
 in
-    changeType;
+    ModifiedStatus
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GatewayDataSources = () =>
