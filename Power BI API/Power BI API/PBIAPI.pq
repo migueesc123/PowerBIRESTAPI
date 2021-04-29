@@ -711,9 +711,10 @@ in
 let
 	source = PowerBIRESTAPI.DatasetsAsAdmin(),
 	trimColumns = Table.SelectColumns(source,{"Dataset ID"}),
-	datasources = Table.AddColumn(trimColumns, "datasources", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/datasets/" & Text.From([Dataset ID])&"/datasources") )[value] ) otherwise null ),
+	datasources = Table.AddColumn(trimColumns, "datasources", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/datasets/" & Text.From([Dataset ID])&"/datasources") )[value],{"datasourceType", "connectionDetails", "datasourceId", "gatewayId"},MissingField.UseNull) otherwise null ),
 	expandDatasources = Table.ExpandTableColumn(datasources, "datasources", {"datasourceType", "connectionDetails", "datasourceId", "gatewayId"}, {"Datasource Type", "connectionDetails", "Datasource ID", "Gateway ID"}),
-	expandConnectionDetails = Table.ExpandRecordColumn(expandDatasources, "connectionDetails", {"path", "kind", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}, {"path", "kind", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}),
+	filterNoRefreshables = Table.SelectRows(expandDatasources, each ([Datasource ID] <> null)),
+	expandConnectionDetails = Table.ExpandRecordColumn(filterNoRefreshables, "connectionDetails", {"path", "kind", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}, {"path", "kind", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}),
 	ServerAndDB = Table.AddColumn(expandConnectionDetails,"Server And Database", each [server]&" | "&[database]),
 	ExtensionFull = Table.AddColumn(ServerAndDB, "ExtensionFull", each [kind] & " | " & [path]),
 	ConnectionInfo = Table.AddColumn(ExtensionFull, "Connection Information", each if [Datasource Type] = "AnalysisServices" then [Server And Database] 
@@ -733,18 +734,20 @@ let
         else if [Datasource Type] = "OleDb" then [connectionString] 
         else if [Datasource Type] = "AzureBlobs" then [account]&" | "&[domain] 
         else "Requires Mapping"),
-	filterNoDatasource = Table.SelectRows(ConnectionInfo, each ([Datasource Type] <> null))
+	removeColumns = Table.SelectColumns(ConnectionInfo,{"Dataset ID", "Datasource ID", "Gateway ID", "Connection Information", "Datasource Type"}),
+	changeType = Table.TransformColumnTypes(removeColumns,{{"Datasource ID", type text}, {"Gateway ID", type text}, {"Connection Information", type text}, {"Datasource Type", type text}})
 in
-	filterNoDatasource;
+	changeType;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.DataflowDatasourcesAsAdmin = () =>
 let
 	source = PowerBIRESTAPI.DataflowsAsAdmin(),
 	trimColumns = Table.SelectColumns(source,{"Dataflow ID"}),
-	datasources = Table.AddColumn(trimColumns, "datasources", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/dataflows/" & Text.From([Dataflow ID])&"/datasources") )[value] ) otherwise null ),
+    datasources = Table.AddColumn(trimColumns, "datasources", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/dataflows/" & Text.From([Dataflow ID])&"/datasources"))[value],{"datasourceType", "connectionDetails", "datasourceId", "gatewayId"},MissingField.UseNull) otherwise null ),
 	expandDatasources = Table.ExpandTableColumn(datasources, "datasources", {"datasourceType", "connectionDetails", "datasourceId", "gatewayId"}, {"Datasource Type", "connectionDetails", "Datasource ID", "Gateway ID"}),
-	expandConnectionDetails = Table.ExpandRecordColumn(expandDatasources, "connectionDetails", {"path", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}, {"path", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}),
+	filterNoRefreshables = Table.SelectRows(expandDatasources, each ([Datasource ID] <> null)),
+    expandConnectionDetails = Table.ExpandRecordColumn(filterNoRefreshables, "connectionDetails", {"path", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}, {"path", "connectionString", "extensionDataSourceKind", "extensionDataSourcePath", "account", "domain", "server", "database", "sharePointSiteUrl", "url"}),
 	ServerAndDB = Table.AddColumn(expandConnectionDetails,"Server And Database", each [server]&" | "&[database]),
 	ExtensionFull = Table.AddColumn(ServerAndDB, "ExtensionFull", each [extensionDataSourceKind] & " | " & [extensionDataSourcePath]),
 	ConnectionInfo = Table.AddColumn(ExtensionFull, "Connection Information", each if [Datasource Type] = "AnalysisServices" then [Server And Database] 
@@ -765,8 +768,7 @@ let
 		else if [Datasource Type] = "OleDb" then [connectionString] 
 		else if [Datasource Type] = "AzureBlobs" then [account]&" | "&[domain] 
 		else "Requires Mapping"),
-	filterNoDatasource = Table.SelectRows(ConnectionInfo, each ([Datasource Type] <> null)),
-	removeColumns = Table.SelectColumns(filterNoDatasource,{"Dataflow ID", "Datasource ID", "Gateway ID", "Connection Information", "Datasource Type"}),
+	removeColumns = Table.SelectColumns(ConnectionInfo,{"Dataflow ID", "Datasource ID", "Gateway ID", "Connection Information", "Datasource Type"}),
 	changeType = Table.TransformColumnTypes(removeColumns,{{"Datasource ID", type text}, {"Gateway ID", type text}, {"Connection Information", type text}, {"Datasource Type", type text}})
 in
 	changeType;
