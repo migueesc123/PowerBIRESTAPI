@@ -19,7 +19,7 @@
     <SuppressCellErrors>False</SuppressCellErrors>
     <MaxRows>1000</MaxRows>
     <ExtensionProject>Yes</ExtensionProject>
-    <Name>Power BI GCCH API</Name>
+    <Name>Power BI DOD API</Name>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>false</DebugSymbols>
