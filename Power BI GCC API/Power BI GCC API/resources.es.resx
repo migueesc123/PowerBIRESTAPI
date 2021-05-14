@@ -185,7 +185,7 @@
             Obtenga la documentación completa en https://msdn.microsoft.com/es-es/library/dn877544.aspx</value>
   </data>
   <data name="GETDataDescription" xml:space="preserve">
-    <value>Devuelve datos sin procesar de cualquiera de los https://api.high.powerbigov.us/v1.0/myorg/ puntos finales.</value>
+    <value>Devuelve datos sin procesar de cualquiera de los https://api.powerbigov.us/v1.0/myorg/ puntos finales.</value>
   </data>
   <data name="GETDataLongDescription" xml:space="preserve">
     <value />
@@ -252,7 +252,7 @@
             Obtenga la documentación completa en https://msdn.microsoft.com/es-es/library/dn877544.aspx</value>
   </data>
   <data name="GETRawDataDescription" xml:space="preserve">
-    <value>Devuelve datos sin procesar de cualquiera de los https://api.high.powerbigov.us/v1.0/myorg/ puntos finales.</value>
+    <value>Devuelve datos sin procesar de cualquiera de los https://api.powerbigov.us/v1.0/myorg/ puntos finales.</value>
   </data>
   <data name="GETRawDataLongDescription" xml:space="preserve">
     <value />
