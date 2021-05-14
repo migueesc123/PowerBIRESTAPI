@@ -4,9 +4,9 @@ All credit to https://github.com/migueesc123/PowerBIRESTAPI for the original cod
 This fork modifies the code to work with non-commerical Power BI cloud versions endpoints.
 
 # Downloads
-- GCC https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20GCC%20API/Power%20BI%20GCC%20API.mez
-- GCCH https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20GCCH%20API/Power%20BI%20GCCH%20API.mez
-- DoD https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20DOD%20API/Power%20BI%20DOD%20API.mez
+- [GCC .mez File](https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20GCC%20API/Power%20BI%20GCC%20API.mez)
+- [GCCH .mez File] https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20GCCH%20API/Power%20BI%20GCCH%20API.mez
+- [DoD .mez File]https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20DOD%20API/Power%20BI%20DOD%20API.mez
 
 # Setup
 You need to do 2 things to use this non-certified connector.
