@@ -9,6 +9,7 @@ This fork modifies the code to work with non-commerical Power BI cloud versions 
 - [DoD .mez File](https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20DOD%20API/Power%20BI%20DOD%20API.mez)
 - [Germany DE .mez File](https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20Germany%20DE%20API/Power%20BI%20Germany%20DE%20API.mez)
 - [China CN .mez File](https://github.com/jlabjlab/PowerBIRESTAPI-GCC-GCCH-DOD/blob/master/Power%20BI%20China%20CN%20API/Power%20BI%20China%20CN%20API.mez)
+
 *Note all versions are in English only
 
 # Setup
