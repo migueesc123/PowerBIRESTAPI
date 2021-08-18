@@ -275,7 +275,7 @@ let
 	toList = source[value],
 	toTable = Table.FromList(toList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
     expandColumns = Table.ExpandRecordColumn(toTable, "Column1", {"id", "isReadOnly", "isOnDedicatedCapacity", "name", "type", "capacityId"}, {"Workspace ID", "Is Read Only", "Is On Dedicated Capacity", "Workspace Name", "Workspace Type", "Capacity ID"}),
-    changeType = Table.TransformColumnTypes(expandColumns,{{"Workspace ID", type text}, {"Is Read Only", type logical}, {"Is On Dedicated Capacity", type logical}, {"Workspace Type", type text}, {"Workspace Name", type text}, {"Workspace State", type text}, {"Capacity ID", type text}})
+    changeType = Table.TransformColumnTypes(expandColumns,{{"Workspace ID", type text}, {"Is Read Only", type logical}, {"Is On Dedicated Capacity", type logical}, {"Workspace Type", type text}, {"Workspace Name", type text}, {"Capacity ID", type text}})
 in
     changeType;
 
