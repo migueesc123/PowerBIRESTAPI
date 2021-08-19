@@ -83,6 +83,8 @@ let
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasources"),"DataflowDatasources",PowerBIRESTAPI.GroupsDataflowDataSources(),"Table","Table",true},
+            {Extension.LoadString("DataflowUpstreamDataflows"),"DataflowUpstreamDataflows",PowerBIRESTAPI.GroupsDataflowUpstreamDataflows(),"Table","Table",true},
+            {Extension.LoadString("DatasetToDataflowLinks"),"DatasetToDataflowLinks",PowerBIRESTAPI.GroupsDatasetToDataflowsLinks(),"Table","Table",true},
             {Extension.LoadString("RefreshHistory"),"RefreshHistory",PowerBIRESTAPI.AWRefreshHistory(),"Table","Table",true},
             {Extension.LoadString("RefreshSchedule"),"RefreshSchedule",PowerBIRESTAPI.AWRefreshSchedule(),"Table","Table",true}
         }),
@@ -424,6 +426,20 @@ in
 	ChangeType;
 
 [DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsDatasetToDataflowsLinks = () =>
+let
+	source = PowerBIRESTAPI.GroupsList(),
+	value = Table.SelectColumns( source, {"Workspace ID"}),
+	datasetToDataflowLinks = Table.AddColumn( value, "datasetToDataflowLinks", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/"&[Workspace ID]&"/datasets/upstreamDataflows",[Headers=[#"Content-type" = "application/json"]])) otherwise null),
+    #"Expanded datasetToDataflowLinks" = Table.ExpandRecordColumn(datasetToDataflowLinks, "datasetToDataflowLinks", {"value"}, {"value"}),
+    #"Expanded value" = Table.ExpandListColumn(#"Expanded datasetToDataflowLinks", "value"),
+    #"Expanded value1" = Table.ExpandRecordColumn(#"Expanded value", "value", {"datasetObjectId", "dataflowObjectId"}, {"Dataset ID", "Dataflow ID"}),
+    #"Filtered Rows" = Table.SelectRows(#"Expanded value1", each [Dataset ID] <> null),
+    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Dataset ID", type text}, {"Dataflow ID", type text}})
+in
+    #"Changed Type";
+
+[DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GroupsDataflows = () =>
 let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups", [Headers = [#"Content-type" = "application/json"]])),
@@ -471,6 +487,20 @@ let
 	ChangeType = Table.TransformColumnTypes(removeColumns,{{"Connection Information", type text}, {"Datasource Type", type text}, {"Gateway ID", type text}, {"Datasource ID", type text}, {"Dataflow ID", type text}, {"Workspace ID", type text}})
 in
 	ChangeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsDataflowUpstreamDataflows = () =>
+let
+	source = PowerBIRESTAPI.GroupsDataflows(),
+	value = Table.SelectColumns( source, {"Workspace ID","Dataflow ID"}),
+	upstreamDataflows = Table.AddColumn( value, "upstreamDataflows", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/"&[Workspace ID]&"/dataflows/"&[Dataflow ID]&"/upstreamDataflows",[Headers=[#"Content-type" = "application/json"]])) otherwise null),
+    #"Expanded upstreamDataflows" = Table.ExpandRecordColumn(upstreamDataflows, "upstreamDataflows", {"value"}, {"value"}),
+    #"Expanded value" = Table.ExpandListColumn(#"Expanded upstreamDataflows", "value"),
+    #"Expanded value1" = Table.ExpandRecordColumn(#"Expanded value", "value", {"targetDataflowId", "groupId"}, {"Upstream Dataflow ID", "Upstream Workspace ID"}),
+    #"Filtered Rows" = Table.SelectRows(#"Expanded value1", each ([Upstream Dataflow ID] = "67be571c-b750-4585-a40c-13ba8afaa345")),
+    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Upstream Dataflow ID", type text}, {"Upstream Workspace ID", type text}})
+in
+    #"Changed Type";
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.Gateways = () =>
