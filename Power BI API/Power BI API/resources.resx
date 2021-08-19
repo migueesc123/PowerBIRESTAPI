@@ -259,4 +259,10 @@
   <data name="GETRawDataResult" xml:space="preserve">
     <value>Raw response for all the datasets in the Personal Workspace of the authenticated user.</value>
   </data>
+  <data name="DataflowUpstreamDataflows" xml:space="preserve">
+    <value>Upstream Dataflows</value>
+  </data>
+  <data name="DatasetToDataflowLinks" xml:space="preserve">
+    <value>Dataset To Dataflow Links</value>
+  </data>
 </root>

@@ -83,6 +83,8 @@ let
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasources"),"DataflowDatasources",PowerBIRESTAPI.GroupsDataflowDataSources(),"Table","Table",true},
+            {Extension.LoadString("DataflowUpstreamDataflows"),"DataflowUpstreamDataflows",PowerBIRESTAPI.GroupsDataflowUpstreamDataflows(),"Table","Table",true},
+            {Extension.LoadString("DatasetToDataflowLinks"),"DatasetToDataflowLinks",PowerBIRESTAPI.GroupsDatasetToDataflowsLinks(),"Table","Table",true},
             {Extension.LoadString("RefreshHistory"),"RefreshHistory",PowerBIRESTAPI.AWRefreshHistory(),"Table","Table",true},
             {Extension.LoadString("RefreshSchedule"),"RefreshSchedule",PowerBIRESTAPI.AWRefreshSchedule(),"Table","Table",true}
         }),
@@ -274,8 +276,8 @@ let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups", [Headers = [#"Content-type" = "application/json"]])),
 	toList = source[value],
 	toTable = Table.FromList(toList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
-    expandColumns = Table.ExpandRecordColumn(toTable, "Column1", {"id", "isReadOnly", "isOnDedicatedCapacity", "name", "capacityId"}, {"Workspace ID", "Is Read Only", "Is On Dedicated Capacity", "Workspace Name", "Capacity ID"}),
-    changeType = Table.TransformColumnTypes(expandColumns,{{"Workspace ID", type text}, {"Is Read Only", type logical}, {"Is On Dedicated Capacity", type logical}, {"Workspace Name", type text}, {"Capacity ID", type text}})
+    expandColumns = Table.ExpandRecordColumn(toTable, "Column1", {"id", "isReadOnly", "isOnDedicatedCapacity", "name", "type", "capacityId"}, {"Workspace ID", "Is Read Only", "Is On Dedicated Capacity", "Workspace Name", "Workspace Type", "Capacity ID"}),
+    changeType = Table.TransformColumnTypes(expandColumns,{{"Workspace ID", type text}, {"Is Read Only", type logical}, {"Is On Dedicated Capacity", type logical}, {"Workspace Type", type text}, {"Workspace Name", type text}, {"Capacity ID", type text}})
 in
     changeType;
 
@@ -322,8 +324,8 @@ let
 	toList = source[value],
 	toTable = Table.FromList(toList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
 	columnNames = Table.ExpandRecordColumn(toTable, "Column1", {"id"}, {"Workspace ID"}),
-	members = Table.AddColumn( columnNames, "Reports", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([Workspace ID])&"/reports") )[value],{"id", "name", "reportType", "webUrl", "embedUrl", "datasetId"},MissingField.UseNull ) otherwise null ),
-	expand = Table.ExpandTableColumn(members, "Reports", {"id", "name", "reportType", "webUrl", "embedUrl", "datasetId"}, {"Report ID", "Report Name", "Report Type", "Report Web URL", "Report Embed URL", "Dataset ID"}),
+	members = Table.AddColumn( columnNames, "Reports", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([Workspace ID])&"/reports") )[value],{"id", "name", "reportType", "webUrl", "embedUrl", "datasetId","endorsementDetails","sensitivityLabel"},MissingField.UseNull ) otherwise null ),
+	expand = Table.ExpandTableColumn(members, "Reports", {"id", "name", "reportType", "webUrl", "embedUrl", "datasetId","endorsementDetails","sensitivityLabel"}, {"Report ID", "Report Name", "Report Type", "Report Web URL", "Report Embed URL", "Dataset ID","endorsementDetails","sensitivityLabel"}),
 	filterNoReports = Table.SelectRows(expand, each ([Report ID] <> null)),
 	ChangeType = Table.TransformColumnTypes(filterNoReports,{{"Workspace ID", type text}, {"Report ID", type text}, {"Report Name", type text}, {"Report Type", type text}, {"Report Web URL", type text}, {"Report Embed URL", type text}, {"Dataset ID", type text}})
 in
@@ -334,7 +336,7 @@ in
 let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports"))[value],
     convertToTable = Table.FromList(source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
-    expandColumns = Table.ExpandRecordColumn(convertToTable, "Column1", {"id", "reportType", "name", "webUrl", "embedUrl", "isOwnedByMe", "datasetId", "appId"}, {"Report ID", "Report Type", "Report Name", "Web URL", "Embed URL", "Is Owned By Me", "Dataset ID", "App Id"}),
+    expandColumns = Table.ExpandRecordColumn(convertToTable, "Column1", {"id", "reportType", "name", "webUrl", "embedUrl", "isOwnedByMe", "datasetId", "appId","endorsementDetails","sensitivityLabel"}, {"Report ID", "Report Type", "Report Name", "Web URL", "Embed URL", "Is Owned By Me", "Dataset ID", "App Id","endorsementDetails","sensitivityLabel"}),
     changeType = Table.TransformColumnTypes(expandColumns,{{"Report ID", type text}, {"Report Type", type text}, {"Report Name", type text}, {"Web URL", type text}, {"Embed URL", type text}, {"Is Owned By Me", type logical}, {"Dataset ID", type text}, {"App Id", type text}})
 in
     changeType;
@@ -424,6 +426,20 @@ in
 	ChangeType;
 
 [DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsDatasetToDataflowsLinks = () =>
+let
+	source = PowerBIRESTAPI.GroupsList(),
+	value = Table.SelectColumns( source, {"Workspace ID"}),
+	datasetToDataflowLinks = Table.AddColumn( value, "datasetToDataflowLinks", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/"&[Workspace ID]&"/datasets/upstreamDataflows",[Headers=[#"Content-type" = "application/json"]])) otherwise null),
+    #"Expanded datasetToDataflowLinks" = Table.ExpandRecordColumn(datasetToDataflowLinks, "datasetToDataflowLinks", {"value"}, {"value"}),
+    #"Expanded value" = Table.ExpandListColumn(#"Expanded datasetToDataflowLinks", "value"),
+    #"Expanded value1" = Table.ExpandRecordColumn(#"Expanded value", "value", {"datasetObjectId", "dataflowObjectId"}, {"Dataset ID", "Dataflow ID"}),
+    #"Filtered Rows" = Table.SelectRows(#"Expanded value1", each [Dataset ID] <> null),
+    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Dataset ID", type text}, {"Dataflow ID", type text}})
+in
+    #"Changed Type";
+
+[DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GroupsDataflows = () =>
 let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups", [Headers = [#"Content-type" = "application/json"]])),
@@ -473,6 +489,20 @@ in
 	ChangeType;
 
 [DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsDataflowUpstreamDataflows = () =>
+let
+	source = PowerBIRESTAPI.GroupsDataflows(),
+	value = Table.SelectColumns( source, {"Workspace ID","Dataflow ID"}),
+	upstreamDataflows = Table.AddColumn( value, "upstreamDataflows", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/"&[Workspace ID]&"/dataflows/"&[Dataflow ID]&"/upstreamDataflows",[Headers=[#"Content-type" = "application/json"]])) otherwise null),
+    #"Expanded upstreamDataflows" = Table.ExpandRecordColumn(upstreamDataflows, "upstreamDataflows", {"value"}, {"value"}),
+    #"Expanded value" = Table.ExpandListColumn(#"Expanded upstreamDataflows", "value"),
+    #"Expanded value1" = Table.ExpandRecordColumn(#"Expanded value", "value", {"targetDataflowId", "groupId"}, {"Upstream Dataflow ID", "Upstream Workspace ID"}),
+    #"Filtered Rows" = Table.SelectRows(#"Expanded value1", each ([Upstream Dataflow ID] = "67be571c-b750-4585-a40c-13ba8afaa345")),
+    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Upstream Dataflow ID", type text}, {"Upstream Workspace ID", type text}})
+in
+    #"Changed Type";
+
+[DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.Gateways = () =>
 let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/gateways"))[value],
@@ -494,15 +524,17 @@ let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/gateways"))[value],
 	ToTable = Table.FromRecords(source),
 	columnNames = Table.RenameColumns(ToTable,{{"id", "Gateway ID"}}),
-	members = Table.AddColumn(columnNames, "Gateway Data Sources", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/" & Text.From([Gateway ID])&"/datasources") )[value] ) otherwise null ),
+	members = Table.AddColumn(columnNames, "Gateway Data Sources", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/" & Text.From([Gateway ID])&"/datasources"))[value] ) otherwise null ),
 	Columns = Table.SelectColumns(members,{"Gateway ID", "Gateway Data Sources"}),
 	Expanded = Table.ExpandTableColumn(Columns, "Gateway Data Sources", {"id"}, {"Gateway Datasource ID"}),
-	datasources = Table.AddColumn(Expanded, "Status", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/"&[Gateway ID]&"/datasources/"&[Gateway Datasource ID]&"/status",[ManualStatusHandling = {400}]),65001) otherwise "ok"),
-        details = Table.AddColumn(datasources, "Details", each try List.Select([Status][error][pbi.error][details], each _[code] ="DM_ErrorDetailNameCode_UnderlyingErrorMessage"){0}[detail][value] otherwise null),
-        ChangedType = Table.TransformColumnTypes(details,{{"Status", type text}}),
-        ModifiedStatus = Table.ReplaceErrorValues(ChangedType, {{"Status", "error"}})
+	datasources = Table.AddColumn(Expanded, "statusJSON", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/gateways/"&[Gateway ID]&"/datasources/"&[Gateway Datasource ID]&"/status",[ManualStatusHandling = {400}]),65001) otherwise "ok"),
+    details = Table.AddColumn(datasources, "Error Message", each try List.Select([statusJSON][error][pbi.error][details], each _[code] ="DM_ErrorDetailNameCode_UnderlyingErrorMessage"){0}[detail][value] otherwise null, type text),
+    code = Table.AddColumn(details, "Error Code", each try [Status][error][code]{0}[code][value] otherwise null),
+    errorFlag = Table.AddColumn(code, "Error Flag", each if [statusJSON] = "ok" then "No" else "Yes", type text),
+    selectColumns = Table.SelectColumns(errorFlag,{"Gateway ID","Gateway Datasource ID","Error Flag","Error Code","Error Message"}),
+	ChangeType = Table.TransformColumnTypes(selectColumns,{{"Gateway ID", type text}, {"Gateway Datasource ID", type text}})
 in
-    ModifiedStatus
+	ChangeType;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GatewayDataSources = () =>
