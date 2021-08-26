@@ -265,4 +265,7 @@
   <data name="DatasetToDataflowLinks" xml:space="preserve">
     <value>Dataset To Dataflow Links</value>
   </data>
+  <data name="DataflowsTransactions" xml:space="preserve">
+    <value>Dataflows Transactions</value>
+  </data>
 </root>
