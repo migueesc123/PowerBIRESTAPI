@@ -260,4 +260,7 @@
   <data name="GETRawDataResult" xml:space="preserve">
     <value>Respuesta sin formato para todos los conjuntos de datos en el área de trabajo personal del usuario autenticado.</value>
   </data>
+  <data name="DataflowsTransactions" xml:space="preserve">
+    <value>Actas de Dataflows</value>
+  </data>
 </root>

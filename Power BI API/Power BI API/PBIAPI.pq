@@ -82,6 +82,7 @@ let
             {Extension.LoadString("Datasets"),"Datasets",PowerBIRESTAPI.GroupsDatasets(),"Table","Table",true},
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
+            {Extension.LoadString("DataflowsTransactions"),"DataflowsTransactions",PowerBIRESTAPI.AWDataflowsTransactions(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasources"),"DataflowDatasources",PowerBIRESTAPI.GroupsDataflowDataSources(),"Table","Table",true},
             {Extension.LoadString("DataflowUpstreamDataflows"),"DataflowUpstreamDataflows",PowerBIRESTAPI.GroupsDataflowUpstreamDataflows(),"Table","Table",true},
             {Extension.LoadString("DatasetToDataflowLinks"),"DatasetToDataflowLinks",PowerBIRESTAPI.GroupsDatasetToDataflowsLinks(),"Table","Table",true},
@@ -175,6 +176,21 @@ GetActivityLog = (url as text) =>
             each [Data])
             in
                 Pagination;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.AWDataflowsTransactions = () =>
+let
+	source = PowerBIRESTAPI.GroupsDataflows(),
+	value = Table.SelectColumns( source, {"Workspace ID","Dataflow ID"}),
+	refreshHistory = Table.AddColumn( value, "Refresh", each try Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/groups/"&[Workspace ID]&"/dataflows/"&[Dataflow ID]&"/transactions",[Headers=[#"Content-type" = "application/json"]])) otherwise null),
+	expandRefresh = Table.ExpandRecordColumn(refreshHistory, "Refresh", {"value"}, {"value"}),
+	expandList = Table.ExpandListColumn(expandRefresh, "value"),
+	expandRecord = Table.ExpandRecordColumn(expandList, "value", {"id", "refreshType", "startTime", "endTime", "status"}, {"Refresh ID", "Refresh Type", "Start Time", "End Time", "Status"}),
+	filterNoRefresh = Table.SelectRows(expandRecord, each ([Refresh ID] <> null)),
+	changeType = Table.TransformColumnTypes(filterNoRefresh,{{"Refresh ID", type text}, {"Refresh Type", type text}, {"Status", type text}, {"Start Time", type datetimezone}, {"End Time", type datetimezone}}),
+    addDuration = Table.AddColumn(changeType, "Duration In Minutes", each Duration.TotalMinutes([End Time]-[Start Time]), type number)
+in
+    addDuration;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.MWRefreshHistory = () => 
