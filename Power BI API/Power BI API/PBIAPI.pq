@@ -462,7 +462,7 @@ let
 	toList = source[value],
 	toTable = Table.FromList(toList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
 	columnNames = Table.ExpandRecordColumn(toTable, "Column1", {"id"}, {"Workspace ID"}),
-	members = Table.AddColumn(columnNames, "Dataflows", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([Workspace ID])&"/dataflows") )[value] ) otherwise null ),
+	members = Table.AddColumn(columnNames, "Dataflows", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([Workspace ID])&"/dataflows") )[value],{"objectId", "name", "description", "configuredBy"},MissingField.UseNull ) otherwise null ),
 	expand = Table.ExpandTableColumn(members, "Dataflows", {"objectId", "name", "description", "configuredBy"}, {"Dataflow ID", "Dataflow Name", "Dataflow Description", "Dataflow Configured By"}),
 	filterNoDataflow = Table.SelectRows(expand, each ([Dataflow ID] <> null)),
 	changeType = Table.TransformColumnTypes(filterNoDataflow,{{"Workspace ID", type text}, {"Dataflow ID", type text}, {"Dataflow Name", type text}, {"Dataflow Description", type text}, {"Dataflow Configured By", type text}})
