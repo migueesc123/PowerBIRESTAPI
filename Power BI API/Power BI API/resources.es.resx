@@ -193,6 +193,12 @@
   <data name="GETDataResult" xml:space="preserve">
     <value>Respuesta sin formato para todos los conjuntos de datos en el área de trabajo personal del usuario autenticado.</value>
   </data>
+  <data name="AppsAsAdmin" xml:space="preserve">
+    <value>Aplicaciones (Admin)</value>
+  </data>
+  <data name="AppUsersAsAdmin" xml:space="preserve">
+    <value>Usarios de Aplicaciones (Admin)</value>
+  </data>
   <data name="GroupsAsAdmin" xml:space="preserve">
     <value>Áreas de trabajo (Admin)</value>
   </data>
