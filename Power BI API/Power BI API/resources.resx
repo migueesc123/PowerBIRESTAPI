@@ -177,6 +177,12 @@
   <data name="Gateways" xml:space="preserve">
     <value>Gateways</value>
   </data>
+  <data name="AppsAsAdmin" xml:space="preserve">
+    <value>Apps (Admin)</value>
+  </data>
+  <data name="AppUsersAsAdmin" xml:space="preserve">
+    <value>App Users (Admin)</value>
+  </data>
   <data name="GroupsAsAdmin" xml:space="preserve">
     <value>Workspaces (Admin)</value>
   </data>

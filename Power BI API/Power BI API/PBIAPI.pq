@@ -97,6 +97,8 @@ AdminNavTable = () as table =>
 let
         objects = #table(
             {"Name","Key","Data","ItemKind","ItemName","IsLeaf"},{
+            {Extension.LoadString("AppsAsAdmin"),"AppsAsAdmin",PowerBIRESTAPI.AppsAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("AppUsersAsAdmin"),"AppUsersAsAdmin",PowerBIRESTAPI.AppUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GroupsAsAdmin"),"GroupsAsAdmin",PowerBIRESTAPI.GroupsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GroupUsersAsAdmin"),"GroupUsersAsAdmin",PowerBIRESTAPI.GroupUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("ReportsAsAdmin"),"ReportsAsAdmin",PowerBIRESTAPI.ReportsAsAdmin(),"Table","Table",true},
@@ -813,6 +815,56 @@ let
 	changeType = Table.TransformColumnTypes(removeColumns,{{"Datasource ID", type text}, {"Gateway ID", type text}, {"Connection Information", type text}, {"Datasource Type", type text}})
 in
 	changeType;
+    
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.AppUsersAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.AppsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"App ID"}),
+	appUsers = Table.AddColumn(trimColumns, "appUsers", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/apps/" & Text.From([App ID])&"/users") )[value],{"emailAddress", "appUserAccessRight", "identifier", "principalType", "graphId", "displayName"},MissingField.UseNull) otherwise null ),
+	expandUsers = Table.ExpandTableColumn(appUsers, "appUsers", {"emailAddress", "appUserAccessRight", "identifier", "principalType", "graphId", "displayName"}, {"Email Address", "App User Access Right", "Identifier", "Principal Type", "Graph ID", "Display Name"}),
+    #"Changed Type" = Table.TransformColumnTypes(expandUsers,{{"Email Address", type text}, {"App User Access Right", type text}, {"Identifier", type text}, {"Principal Type", type text}, {"Graph ID", type text}, {"Display Name", type text}})
+in
+    #"Changed Type";
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.AppsAsAdmin = () =>
+let 
+	BaseUrl         = "https://api.powerbi.com/v1.0/myorg/admin/Apps?",
+	EntitiesPerPage = 5000,
+ 
+	GetJson = (Url) =>
+        	let RawData = Web.Contents(Url),
+			Json    = Json.Document(RawData)
+		in  
+			Json,
+ 
+	GetEntityCount = () =>
+		let Url   = "https://api.powerbi.com/v1.0/myorg/admin/Groups?$top=1",
+			Json  = GetJson(Url),
+			Count = Json[#"@odata.count"]
+        	in  
+			Count,
+ 
+	GetPage = (Index) =>
+		let Skip  = "$skip=" & Text.From(Index * EntitiesPerPage),
+			Top   = "$top=" & Text.From(EntitiesPerPage),
+			Url   = BaseUrl & "&" & Skip & "&" & Top,
+			Json  = GetJson(Url),
+			Value = Json[#"value"]
+		in  
+			Value,
+ 
+	EntityCount = List.Max({ EntitiesPerPage, GetEntityCount() }),
+	PageCount   = Number.RoundUp(EntityCount / EntitiesPerPage),
+	PageIndices = { 0 .. PageCount - 1 },
+	Pages       = List.Transform(PageIndices, each GetPage(_)),
+	Entities    = List.Union(Pages),
+	Table       = Table.FromList(Entities, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+	expandColumns = Table.ExpandRecordColumn(Table, "Column1", {"id", "name", "description", "publishedBy", "lastUpdate"}, {"App ID", "App Name", "App Description", "Published By", "Last Updated"}),
+    #"Changed Type" = Table.TransformColumnTypes(expandColumns,{{"App ID", type text}, {"App Name", type text}, {"App Description", type text}, {"Published By", type text}, {"Last Updated", type datetime}})
+in
+    #"Changed Type";
 
 //
 // Data Source definition
