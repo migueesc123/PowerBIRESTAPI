@@ -79,7 +79,7 @@ let
             {Extension.LoadString("Dashboards"),"Dashboards",PowerBIRESTAPI.GroupsDashboards(),"Table","Table",true},
             {Extension.LoadString("DashboardTiles"),"DashboardTiles",PowerBIRESTAPI.GroupsDashboardTiles(),"Table","Table",true},
             {Extension.LoadString("Reports"),"Reports",PowerBIRESTAPI.GroupsReports(),"Table","Table",true},
-            {Extension.LoadString("ReportPages"),"ReportPages",PowerBIRESTAPI.ReportsPages(),"Table","Table",true},
+            {Extension.LoadString("ReportPages"),"ReportPages",PowerBIRESTAPI.ReportPages(),"Table","Table",true},
             {Extension.LoadString("Datasets"),"Datasets",PowerBIRESTAPI.GroupsDatasets(),"Table","Table",true},
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
@@ -351,7 +351,7 @@ in
 	ChangeType;
 
 [DataSource.Kind="PowerBIRESTAPI"]
-	PowerBIRESTAPI.ReportsPages = () =>
+	PowerBIRESTAPI.ReportPages = () =>
 let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups", [Headers = [#"Content-type" = "application/json"]])),
 	toList = source[value],
@@ -363,9 +363,9 @@ let
 	ChangeType = Table.TransformColumnTypes(filterNoReports,{{"Workspace ID", type text}, {"Report ID", type text}, {"Report Name", type text}, {"Report Type", type text}, {"Report Web URL", type text}, {"Report Embed URL", type text}, {"Dataset ID", type text}}),
 	membersPages = Table.AddColumn( ChangeType, "Pages", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports/" & Text.From([Report ID])&"/pages") )[value],{"displayName", "Name", "order"},MissingField.UseNull ) otherwise null ),
 	expandPages = Table.ExpandTableColumn(membersPages, "Pages", {"displayName", "Name", "order"}, {"Display Name", "Name", "Order"}),
-	filterNoReportsPages = Table.SelectRows(expandPages, each ([Display Name] <> null))
+	filterNoReportPages = Table.SelectRows(expandPages, each ([Display Name] <> null))
 in
-	filterNoReportsPages;
+	filterNoReportPages;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	shared PowerBIRESTAPI.MWReports = () =>
