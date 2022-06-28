@@ -353,18 +353,12 @@ in
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.ReportPages = () =>
 let
-	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups", [Headers = [#"Content-type" = "application/json"]])),
-	toList = source[value],
-	toTable = Table.FromList(toList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
-	columnNames = Table.ExpandRecordColumn(toTable, "Column1", {"id"}, {"Workspace ID"}),
-	members = Table.AddColumn( columnNames, "Reports", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([Workspace ID])&"/reports") )[value],{"id", "name", "reportType", "webUrl", "embedUrl", "datasetId","endorsementDetails","sensitivityLabel"},MissingField.UseNull ) otherwise null ),
-	expand = Table.ExpandTableColumn(members, "Reports", {"id", "datasetId"}, {"Report ID", "Dataset ID"}),
-	filterNoReports = Table.SelectRows(expand, each ([Report ID] <> null)),
-	ChangeType = Table.TransformColumnTypes(filterNoReports,{{"Workspace ID", type text}, {"Report ID", type text}, {"Dataset ID", type text}}),
-	membersPages = Table.AddColumn( ChangeType, "Pages", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports/" & Text.From([Report ID])&"/pages") )[value],{"displayName", "Name", "order"},MissingField.UseNull ) otherwise null ),
+	source = PowerBIRESTAPI.GroupsReports(),
+    filterColumns = Table.SelectColumns(source,{"Workspace ID", "Report ID", "Dataset ID"}),
+	membersPages = Table.AddColumn( filterColumns, "Pages", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports/" & Text.From([Report ID])&"/pages") )[value],{"displayName", "Name", "order"},MissingField.UseNull ) otherwise null ),
 	expandPages = Table.ExpandTableColumn(membersPages, "Pages", {"displayName", "Name", "order"}, {"Display Name", "Name", "Order"}),
-    	changeTypePages = Table.TransformColumnTypes(expandPages,{{"Display Name", type text}, {"Name", type text}, {"Order", type text}}),
-	filterNoReportPages = Table.SelectRows(changeTypePages, each ([Display Name] <> null))
+    changeType = Table.TransformColumnTypes(expandPages,{{"Display Name", type text}, {"Name", type text}, {"Order", Int64.Type}}),
+	filterNoReportPages = Table.SelectRows(changeType, each ([Display Name] <> null))
 in
 	filterNoReportPages;
 
