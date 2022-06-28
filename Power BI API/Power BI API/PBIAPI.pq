@@ -79,7 +79,7 @@ let
             {Extension.LoadString("Dashboards"),"Dashboards",PowerBIRESTAPI.GroupsDashboards(),"Table","Table",true},
             {Extension.LoadString("DashboardTiles"),"DashboardTiles",PowerBIRESTAPI.GroupsDashboardTiles(),"Table","Table",true},
             {Extension.LoadString("Reports"),"Reports",PowerBIRESTAPI.GroupsReports(),"Table","Table",true},
-            {Extension.LoadString("Pages"),"Pages",PowerBIRESTAPI.ReportsPages(),"Table","Table",true},
+            {Extension.LoadString("ReportPages"),"ReportPages",PowerBIRESTAPI.ReportsPages(),"Table","Table",true},
             {Extension.LoadString("Datasets"),"Datasets",PowerBIRESTAPI.GroupsDatasets(),"Table","Table",true},
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
