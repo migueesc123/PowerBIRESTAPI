@@ -79,6 +79,7 @@ let
             {Extension.LoadString("Dashboards"),"Dashboards",PowerBIRESTAPI.GroupsDashboards(),"Table","Table",true},
             {Extension.LoadString("DashboardTiles"),"DashboardTiles",PowerBIRESTAPI.GroupsDashboardTiles(),"Table","Table",true},
             {Extension.LoadString("Reports"),"Reports",PowerBIRESTAPI.GroupsReports(),"Table","Table",true},
+            {Extension.LoadString("Pages"),"Pages",PowerBIRESTAPI.ReportsPages(),"Table","Table",true},
             {Extension.LoadString("Datasets"),"Datasets",PowerBIRESTAPI.GroupsDatasets(),"Table","Table",true},
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
@@ -348,6 +349,23 @@ let
 	ChangeType = Table.TransformColumnTypes(filterNoReports,{{"Workspace ID", type text}, {"Report ID", type text}, {"Report Name", type text}, {"Report Type", type text}, {"Report Web URL", type text}, {"Report Embed URL", type text}, {"Dataset ID", type text}})
 in
 	ChangeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.ReportsPages = () =>
+let
+	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups", [Headers = [#"Content-type" = "application/json"]])),
+	toList = source[value],
+	toTable = Table.FromList(toList, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+	columnNames = Table.ExpandRecordColumn(toTable, "Column1", {"id"}, {"Workspace ID"}),
+	members = Table.AddColumn( columnNames, "Reports", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/groups/" & Text.From([Workspace ID])&"/reports") )[value],{"id", "name", "reportType", "webUrl", "embedUrl", "datasetId","endorsementDetails","sensitivityLabel"},MissingField.UseNull ) otherwise null ),
+	expand = Table.ExpandTableColumn(members, "Reports", {"id", "name", "reportType", "webUrl", "embedUrl", "datasetId","endorsementDetails","sensitivityLabel"}, {"Report ID", "Report Name", "Report Type", "Report Web URL", "Report Embed URL", "Dataset ID","endorsementDetails","sensitivityLabel"}),
+	filterNoReports = Table.SelectRows(expand, each ([Report ID] <> null)),
+	ChangeType = Table.TransformColumnTypes(filterNoReports,{{"Workspace ID", type text}, {"Report ID", type text}, {"Report Name", type text}, {"Report Type", type text}, {"Report Web URL", type text}, {"Report Embed URL", type text}, {"Dataset ID", type text}}),
+	membersPages = Table.AddColumn( ChangeType, "Pages", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports/" & Text.From([Report ID])&"/pages") )[value],{"displayName", "Name", "order"},MissingField.UseNull ) otherwise null ),
+	expandPages = Table.ExpandTableColumn(membersPages, "Pages", {"displayName", "Name", "order"}, {"Display Name", "Name", "Order"}),
+	filterNoReportsPages = Table.SelectRows(expandPages, each ([Display Name] <> null))
+in
+	filterNoReportsPages;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	shared PowerBIRESTAPI.MWReports = () =>

@@ -274,4 +274,7 @@
   <data name="DataflowsTransactions" xml:space="preserve">
     <value>Dataflows Transactions</value>
   </data>
+  <data name="Pages" xml:space="preserve">
+    <value>Pages</value>
+  </data>
 </root>
