@@ -269,4 +269,7 @@
   <data name="DataflowsTransactions" xml:space="preserve">
     <value>Actas de Dataflows</value>
   </data>
+  <data name="ReportPages" xml:space="preserve">
+    <value>Páginas de Informes</value>
+  </data>
 </root>

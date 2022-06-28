@@ -79,6 +79,7 @@ let
             {Extension.LoadString("Dashboards"),"Dashboards",PowerBIRESTAPI.GroupsDashboards(),"Table","Table",true},
             {Extension.LoadString("DashboardTiles"),"DashboardTiles",PowerBIRESTAPI.GroupsDashboardTiles(),"Table","Table",true},
             {Extension.LoadString("Reports"),"Reports",PowerBIRESTAPI.GroupsReports(),"Table","Table",true},
+            {Extension.LoadString("ReportPages"),"ReportPages",PowerBIRESTAPI.ReportPages(),"Table","Table",true},
             {Extension.LoadString("Datasets"),"Datasets",PowerBIRESTAPI.GroupsDatasets(),"Table","Table",true},
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
@@ -348,6 +349,18 @@ let
 	ChangeType = Table.TransformColumnTypes(filterNoReports,{{"Workspace ID", type text}, {"Report ID", type text}, {"Report Name", type text}, {"Report Type", type text}, {"Report Web URL", type text}, {"Report Embed URL", type text}, {"Dataset ID", type text}})
 in
 	ChangeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.ReportPages = () =>
+let
+	source = PowerBIRESTAPI.GroupsReports(),
+    filterColumns = Table.SelectColumns(source,{"Workspace ID", "Report ID", "Dataset ID"}),
+	membersPages = Table.AddColumn( filterColumns, "Pages", each try Table.FromRecords(Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/reports/" & Text.From([Report ID])&"/pages") )[value],{"displayName", "Name", "order"},MissingField.UseNull ) otherwise null ),
+	expandPages = Table.ExpandTableColumn(membersPages, "Pages", {"displayName", "Name", "order"}, {"Display Name", "Name", "Order"}),
+    changeType = Table.TransformColumnTypes(expandPages,{{"Display Name", type text}, {"Name", type text}, {"Order", Int64.Type}}),
+	filterNoReportPages = Table.SelectRows(changeType, each ([Display Name] <> null))
+in
+	filterNoReportPages;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	shared PowerBIRESTAPI.MWReports = () =>
