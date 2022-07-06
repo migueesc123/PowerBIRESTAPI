@@ -117,6 +117,10 @@ ExperimentalNavTable = () as table =>
 let
         objects = #table(
             {"Name","Key","Data","ItemKind","ItemName","IsLeaf"},{
+            {Extension.LoadString("ReportUsersAsAdmin"),"ReportUsersAsAdmin",PowerBIRESTAPI.ReportUsersAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("DatasetUsersAsAdmin"),"DatasetUsersAsAdmin",PowerBIRESTAPI.DatasetUsersAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("DataflowUsersAsAdmin"),"DataflowUsersAsAdmin",PowerBIRESTAPI.DataflowUsersAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("DashboardUsersAsAdmin"),"DashboardUsersAsAdmin",PowerBIRESTAPI.DashboardUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GatewayDataSourceStatus"),"GatewayDataSourceStatus",PowerBIRESTAPI.GatewayDataSourceStatus(),"Table","Table",true},
             {Extension.LoadString("DatasetDatasourcesAsAdmin"),"DatasetDatasourcesAsAdmin",PowerBIRESTAPI.DatasetDatasourcesAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasourcesAsAdmin"),"DataflowDatasourcesAsAdmin",PowerBIRESTAPI.DataflowDatasourcesAsAdmin(),"Table","Table",true}
@@ -687,6 +691,54 @@ in
 
 
 [DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.ReportUsersAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.ReportsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Report ID"}),
+	addColumn = Table.AddColumn(trimColumns, "Users", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/reports/" & Text.From([Report ID])&"/users"))[value],{"emailAddress","reportUserAccessRight","displayName","identifier","principalType","graphId"},MissingField.UseNull ) otherwise null ),
+    expand = Table.ExpandTableColumn(addColumn, "Users", {"emailAddress", "reportUserAccessRight", "displayName", "identifier", "principalType", "graphId"}, {"Email Address", "User Access Level", "Display Name", "Identifier", "Principal Type", "Graph ID"}),
+    changeType = Table.TransformColumnTypes(expand,{{"Email Address", type text}, {"User Access Level", type text}, {"Display Name", type text}, {"Identifier", type text}, {"Principal Type", type text}, {"Graph ID", type text}})
+in
+    changeType;
+
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.DatasetUsersAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.DatasetsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Dataset ID"}),
+	addColumn = Table.AddColumn(trimColumns, "Users", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/datasets/" & Text.From([Dataset ID])&"/users"))[value],{"emailAddress","datasetUserAccessRight","displayName","identifier","principalType","graphId"},MissingField.UseNull ) otherwise null ),
+    expand = Table.ExpandTableColumn(addColumn, "Users", {"emailAddress", "datasetUserAccessRight", "displayName", "identifier", "principalType", "graphId"}, {"Email Address", "User Access Level", "Display Name", "Identifier", "Principal Type", "Graph ID"}),
+    changeType = Table.TransformColumnTypes(expand,{{"Email Address", type text}, {"User Access Level", type text}, {"Display Name", type text}, {"Identifier", type text}, {"Principal Type", type text}, {"Graph ID", type text}})
+in
+    changeType;
+
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.DataflowUsersAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.DataflowsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Dataflow ID"}),
+	addColumn = Table.AddColumn(trimColumns, "Users", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/dataflows/" & Text.From([Dataflow ID])&"/users"))[value],{"emailAddress","dataflowUserAccessRight","displayName","identifier","principalType","graphId"},MissingField.UseNull ) otherwise null ),
+    expand = Table.ExpandTableColumn(addColumn, "Users", {"emailAddress", "dataflowUserAccessRight", "displayName", "identifier", "principalType", "graphId"}, {"Email Address", "User Access Level", "Display Name", "Identifier", "Principal Type", "Graph ID"}),
+    changeType = Table.TransformColumnTypes(expand,{{"Email Address", type text}, {"User Access Level", type text}, {"Display Name", type text}, {"Identifier", type text}, {"Principal Type", type text}, {"Graph ID", type text}})
+in
+    changeType;
+
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.DashboardUsersAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.DashboardsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Dashboard ID"}),
+	addColumn = Table.AddColumn(trimColumns, "Users", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/dashboards/" & Text.From([Dashboard ID])&"/users"))[value],{"emailAddress","dashboardUserAccessRight","displayName","identifier","principalType","graphId"},MissingField.UseNull ) otherwise null ),
+    expand = Table.ExpandTableColumn(addColumn, "Users", {"emailAddress", "dashboardUserAccessRight", "displayName", "identifier", "principalType", "graphId"}, {"Email Address", "User Access Level", "Display Name", "Identifier", "Principal Type", "Graph ID"}),
+    changeType = Table.TransformColumnTypes(expand,{{"Email Address", type text}, {"User Access Level", type text}, {"Display Name", type text}, {"Identifier", type text}, {"Principal Type", type text}, {"Graph ID", type text}})
+in
+    changeType;
+
+
+[DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.DashboardsAsAdmin = () =>
 let
 	source = PowerBIRESTAPI.GroupsAsAdmin(),
@@ -879,6 +931,7 @@ let
     #"Changed Type" = Table.TransformColumnTypes(expandColumns,{{"App ID", type text}, {"App Name", type text}, {"App Description", type text}, {"Published By", type text}, {"Last Updated", type datetime}})
 in
     #"Changed Type";
+
 
 //
 // Data Source definition
