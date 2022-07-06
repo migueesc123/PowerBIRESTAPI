@@ -232,6 +232,18 @@
   <data name="ReportsAsAdmin" xml:space="preserve">
     <value>Informes (Admin)</value>
   </data>
+  <data name="ReportUsersAsAdmin" xml:space="preserve">
+    <value>Usuarios de Informes (Admin)</value>
+  </data>
+  <data name="DatasetUsersAsAdmin" xml:space="preserve">
+    <value>Usuarios de conjuntos de datos (Admin)</value>
+  </data>
+  <data name="DataflowUsersAsAdmin" xml:space="preserve">
+    <value>Usuarios de dataflows (Admin)</value>
+  </data>
+  <data name="DashboardUsersAsAdmin" xml:space="preserve">
+    <value>Usuarios de paneles (Admin)</value>
+  </data>
   <data name="Workspace Users" xml:space="preserve">
     <value>Usuarios de áreas de trabajo</value>
   </data>

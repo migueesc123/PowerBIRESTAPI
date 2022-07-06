@@ -192,6 +192,18 @@
   <data name="ReportsAsAdmin" xml:space="preserve">
     <value>Reports (Admin)</value>
   </data>
+  <data name="ReportUsersAsAdmin" xml:space="preserve">
+    <value>Report Users (Admin)</value>
+  </data>
+  <data name="DatasetUsersAsAdmin" xml:space="preserve">
+    <value>Dataset Users (Admin)</value>
+  </data>
+  <data name="DataflowUsersAsAdmin" xml:space="preserve">
+    <value>Dataflow Users (Admin)</value>
+  </data>
+  <data name="DashboardUsersAsAdmin" xml:space="preserve">
+    <value>Dashboard Users (Admin)</value>
+  </data>
   <data name="DashboardsAsAdmin" xml:space="preserve">
     <value>Dashboards (Admin)</value>
   </data>
