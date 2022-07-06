@@ -106,6 +106,9 @@ let
             {Extension.LoadString("DashboardsAsAdmin"),"DashboardsAsAdmin",PowerBIRESTAPI.DashboardsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowsAsAdmin"),"DataflowsAsAdmin",PowerBIRESTAPI.DataflowsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DatasetsAsAdmin"),"DatasetsAsAdmin",PowerBIRESTAPI.DatasetsAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("PipelinesAsAdmin"),"PipelinesAsAdmin",PowerBIRESTAPI.PipelinesAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("PipelineStagesAsAdmin"),"PipelineStagesAsAdmin",PowerBIRESTAPI.PipelineStagesAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("PipelineUsersAsAdmin"),"PipelineUsersAsAdmin",PowerBIRESTAPI.PipelineUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("CapacitiesAsAdmin"),"CapacitiesAsAdmin",PowerBIRESTAPI.CapacitiesAsAdmin(),"Table","Table",true},
             {Extension.LoadString("CapacityRefreshablesAsAdmin"),"CapacityRefreshablesAsAdmin",PowerBIRESTAPI.CapacityRefreshablesAsAdmin(),"Table","Table",true}
         }),
@@ -932,7 +935,43 @@ let
 in
     #"Changed Type";
 
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.PipelinesAsAdmin = () =>
+let 
+	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/pipelines?$expand=users,stages"))[value],
+    toTable = Table.FromList(source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    expand = Table.ExpandRecordColumn(toTable, "Column1", {"id", "displayName", "users", "stages", "description"}, {"id", "displayName", "users", "stages", "description"}),
+    removeColumns = Table.SelectColumns(expand,{"id", "displayName", "description"}),
+    renameColumns = Table.RenameColumns(removeColumns,{{"id", "Pipeline ID"}, {"displayName", "Pipeline Name"}, {"description", "Pipeline Description"}}),
+    changeType = Table.TransformColumnTypes(renameColumns,{{"Pipeline Description", type text}, {"Pipeline Name", type text}, {"Pipeline ID", type text}})
+in
+    changeType;
 
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.PipelineUsersAsAdmin = () =>
+let 
+	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/pipelines?$expand=users"))[value],
+    toTable = Table.FromList(source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    expandColumns = Table.ExpandRecordColumn(toTable, "Column1", {"id", "users"}, {"id", "users"}),
+    expandList = Table.ExpandListColumn(expandColumns, "users"),
+    expandRecords = Table.ExpandRecordColumn(expandList, "users", {"accessRight", "identifier", "principalType"}, {"accessRight", "identifier", "principalType"}),
+    renameColumns = Table.RenameColumns(expandRecords,{{"id", "Pipeline ID"}, {"accessRight", "Access Level"}, {"identifier", "Identifier"}, {"principalType", "Principal Type"}}),
+    changeType = Table.TransformColumnTypes(renameColumns,{{"Principal Type", type text}, {"Identifier", type text}, {"Access Level", type text}, {"Pipeline ID", type text}})
+in
+    changeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.PipelineStagesAsAdmin = () =>
+let 
+	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/admin/pipelines?$expand=stages"))[value],
+    toTable = Table.FromList(source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+  	expandColumns   = Table.ExpandRecordColumn(toTable, "Column1", {"id", "stages"}, {"id", "stages"}),
+    expandList = Table.ExpandListColumn(expandColumns, "stages"),
+    expandRecords = Table.ExpandRecordColumn(expandList, "stages", {"order", "workspaceId", "workspaceName"}, {"order", "workspaceId", "workspaceName"}),
+    changeType = Table.TransformColumnTypes(expandRecords,{{"id", type text}, {"workspaceId", type text}, {"workspaceName", type text}, {"order", Int64.Type}}),
+    renameColumns = Table.RenameColumns(changeType,{{"id", "Pipeline ID"}, {"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}})
+in
+    renameColumns;
 //
 // Data Source definition
 //
