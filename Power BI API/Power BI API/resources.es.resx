@@ -250,6 +250,15 @@
   <data name="Workspaces" xml:space="preserve">
     <value>Lista de áreas de trabajo</value>
   </data>
+  <data name="PipelineUsers" xml:space="preserve">
+    <value>Usuarios de canalización de implementación</value>
+  </data>
+  <data name="PipelineStages" xml:space="preserve">
+    <value>Fases de canalización de implementación</value>
+  </data>
+  <data name="Pipelines" xml:space="preserve">
+    <value>Canalizaciónes de implementación</value>
+  </data>
   <data name="PipelineUsersAsAdmin" xml:space="preserve">
     <value>Usuarios de canalización de implementación (Admin)</value>
   </data>

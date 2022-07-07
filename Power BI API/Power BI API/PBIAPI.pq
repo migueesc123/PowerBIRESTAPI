@@ -83,6 +83,11 @@ let
             {Extension.LoadString("Datasets"),"Datasets",PowerBIRESTAPI.GroupsDatasets(),"Table","Table",true},
             {Extension.LoadString("Datasources"),"Datasources",PowerBIRESTAPI.GroupsDatasources(),"Table","Table",true},
             {Extension.LoadString("Dataflows"),"Dataflows",PowerBIRESTAPI.GroupsDataflows(),"Table","Table",true},
+            {Extension.LoadString("Pipelines"),"Pipelines",PowerBIRESTAPI.GroupsPipelines(),"Table","Table",true},
+            {Extension.LoadString("PipelineStages"),"PipelineStages",PowerBIRESTAPI.GroupsPipelineStages(),"Table","Table",true},
+            {Extension.LoadString("PipelineUsers"),"PipelineUsers",PowerBIRESTAPI.GroupsPipelineUsers(),"Table","Table",true},
+            {Extension.LoadString("PipelineOperations"),"PipelineOperations",PowerBIRESTAPI.GroupsPipelineOperations(),"Table","Table",true},
+            {Extension.LoadString("PipelineStageArtifacts"),"PipelineStageArtifacts",PowerBIRESTAPI.GroupsPipelineStageArtifacts(),"Table","Table",true},
             {Extension.LoadString("DataflowsTransactions"),"DataflowsTransactions",PowerBIRESTAPI.AWDataflowsTransactions(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasources"),"DataflowDatasources",PowerBIRESTAPI.GroupsDataflowDataSources(),"Table","Table",true},
             {Extension.LoadString("DataflowUpstreamDataflows"),"DataflowUpstreamDataflows",PowerBIRESTAPI.GroupsDataflowUpstreamDataflows(),"Table","Table",true},
@@ -972,6 +977,64 @@ let
     renameColumns = Table.RenameColumns(changeType,{{"id", "Pipeline ID"}, {"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}})
 in
     renameColumns;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsPipelines = () =>
+let 
+	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg/pipelines?$expand=users,stages"))[value],
+    toTable = Table.FromList(source, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+    expand = Table.ExpandRecordColumn(toTable, "Column1", {"id", "displayName", "users", "stages", "description"}, {"id", "displayName", "users", "stages", "description"}),
+    removeColumns = Table.SelectColumns(expand,{"id", "displayName", "description"}),
+    renameColumns = Table.RenameColumns(removeColumns,{{"id", "Pipeline ID"}, {"displayName", "Pipeline Name"}, {"description", "Pipeline Description"}}),
+    changeType = Table.TransformColumnTypes(renameColumns,{{"Pipeline Description", type text}, {"Pipeline Name", type text}, {"Pipeline ID", type text}})
+in
+    changeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsPipelineUsers = () =>
+let 
+	source = PowerBIRESTAPI.GroupsPipelines(),
+	trimColumns = Table.SelectColumns(source,{"Pipeline ID"}),
+	webCall = Table.AddColumn(trimColumns, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/users") )[value],{"identifier", "accessRight", "principalType"},MissingField.UseNull) otherwise null ),
+    expandColumn = Table.ExpandTableColumn(webCall, "Column1", {"identifier", "accessRight", "principalType"}, {"identifier", "accessRight", "principalType"}),
+    changeType = Table.TransformColumnTypes(expandColumn,{{"identifier", type text}, {"accessRight", type text}, {"principalType", type text}}),
+    renameColumns = Table.RenameColumns(changeType,{{"identifier", "Identifier"}, {"accessRight", "Access Right"}, {"principalType", "Principal Type"}})
+in
+    renameColumns;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsPipelineOperations = () =>
+let 
+	source = PowerBIRESTAPI.GroupsPipelines(),
+	trimColumns = Table.SelectColumns(source,{"Pipeline ID"}),
+	webCall = Table.AddColumn(trimColumns, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/operations") )[value],{"id", "type", "status","lastUpdatedTime","executionStartTime","executionEndTime","sourceStageOrder","targetStageOrder"},MissingField.UseNull) otherwise null ),
+    expandColumn = Table.ExpandTableColumn(webCall, "Column1", {"id", "type", "status", "lastUpdatedTime", "executionStartTime", "executionEndTime", "sourceStageOrder", "targetStageOrder"}, {"id", "type", "status", "lastUpdatedTime", "executionStartTime", "executionEndTime", "sourceStageOrder", "targetStageOrder"}),
+    changeType = Table.TransformColumnTypes(expandColumn,{{"id", type text}, {"type", type text}, {"status", type text}, {"lastUpdatedTime", type datetimezone}, {"executionStartTime", type datetimezone}, {"executionEndTime", type datetimezone}, {"sourceStageOrder", Int64.Type}, {"targetStageOrder", Int64.Type}}),
+    renameColumns = Table.RenameColumns(changeType,{{"id", "Operation ID"}, {"type", "Type"}, {"status", "Status"}, {"lastUpdatedTime", "Last Updated Datetime"}, {"executionStartTime", "Execution Start Datetime"}, {"executionEndTime", "Execution End Datetime"}, {"sourceStageOrder", "Source Stage Order"}, {"targetStageOrder", "Target Stage Order"}})
+in
+    renameColumns;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsPipelineStages = () =>
+let 
+	source = PowerBIRESTAPI.GroupsPipelines(),
+	trimColumns = Table.SelectColumns(source,{"Pipeline ID"}),
+	webCall = Table.AddColumn(trimColumns, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/stages") )[value],{"order", "workspaceId", "workspaceName"},MissingField.UseNull) otherwise null ),
+    expandColumn = Table.ExpandTableColumn(webCall, "Column1", {"order", "workspaceId", "workspaceName"}, {"order", "workspaceId", "workspaceName"}),
+    changeType = Table.TransformColumnTypes(expandColumn,{{"workspaceId", type text}, {"workspaceName", type text}, {"order", Int64.Type}}),
+    renameColumns = Table.RenameColumns(changeType,{{"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}})
+in
+    renameColumns;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GroupsPipelineStageArtifacts = () =>
+let 
+	source = PowerBIRESTAPI.GroupsPipelineStages(),
+	trimColumns = Table.SelectColumns(source,{"Pipeline ID","Stage Order"}),
+    changeType = Table.TransformColumnTypes(trimColumns,{{"Stage Order", type text}}),
+	webCall = Table.AddColumn(changeType, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/stages/"& Text.From([Stage Order])&"/artifacts") )[value] ) otherwise null )
+in
+    webCall;
 //
 // Data Source definition
 //
