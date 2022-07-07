@@ -9,9 +9,14 @@ The goal of this connector is to enable you as an end-user or a tenant admin to 
     - Reports
     - Datasets
     - Dataflows
+    - Pipelines
+    - Apps
     - Gateways
 - Retrieve a list of the members and types of access for each member inside an app workspace 'aka' Group
 - Analyze Refresh history and error codes
+- View gateway cluster and datasource details
+- Analyze deployment pipeline operations
+- Call the Activity Events log
 ![Power BI REST API Connector](https://i.ibb.co/m8tBdtM/PBIRESTAPI.png)
 
 Some API end points perform poorly on large tenants, and as such we have included those in an "Experimental" folder as we cannot guarantee performance of these queries. 

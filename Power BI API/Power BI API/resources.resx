@@ -286,14 +286,29 @@
   <data name="DataflowsTransactions" xml:space="preserve">
     <value>Dataflows Transactions</value>
   </data>
-  <data name="PipelinesAsAdmin" xml:space="preserve">
-    <value>Deployment Pipelines (Admin)</value>
-  </data>
   <data name="PipelineUsersAsAdmin" xml:space="preserve">
     <value>Deployment Pipeline Users (Admin)</value>
   </data>
   <data name="PipelineStagesAsAdmin" xml:space="preserve">
     <value>Deployment Pipeline Stages (Admin)</value>
+  </data>
+  <data name="PipelinesAsAdmin" xml:space="preserve">
+    <value>Deployment Pipelines (Admin)</value>
+  </data>
+  <data name="PipelineUsers" xml:space="preserve">
+    <value>Deployment Pipeline Users</value>
+  </data>
+  <data name="PipelineStages" xml:space="preserve">
+    <value>Deployment Pipeline Stages</value>
+  </data>
+  <data name="Pipelines" xml:space="preserve">
+    <value>Deployment Pipelines</value>
+  </data>
+  <data name="PipelineOperations" xml:space="preserve">
+    <value>Deployment Pipeline Operations</value>
+  </data>
+  <data name="PipelineStageArtifacts" xml:space="preserve">
+    <value>Deployment Pipeline Stage Artifacts</value>
   </data>
   <data name="ReportPages" xml:space="preserve">
     <value>Report Pages</value>
