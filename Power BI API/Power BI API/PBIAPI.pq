@@ -240,7 +240,7 @@ in
 
 
 [DataSource.Kind = "PowerBIRESTAPI"]
-shared pbiAdminAPI.ExecuteQuery = Value.ReplaceType(ExecuteQuery,ExecuteQueryType);
+shared PowerBIRESTAPI.ExecuteQuery = Value.ReplaceType(ExecuteQuery,ExecuteQueryType);
 
 ExecuteQueryType =
     type function (optional datasetId as
