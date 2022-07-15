@@ -1200,8 +1200,9 @@ let
     expandColumn = Table.ExpandTableColumn(webCall, "Column1", {"order", "workspaceId", "workspaceName"}, {"order", "workspaceId", "workspaceName"}),
     changeType = Table.TransformColumnTypes(expandColumn,{{"workspaceId", type text}, {"workspaceName", type text}, {"order", Int64.Type}}),
     renameColumns = Table.RenameColumns(changeType,{{"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}})
+    typeOfStage = Table.AddColumn(renameColumns,"Name of Stage",each if [#"Stage Order"] = 0 then "Development" else if [#"Stage Order"] = 1 then "Test" else "Production")
 in
-    renameColumns;
+    typeOfStage;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GroupsPipelineStageArtifacts = () =>
