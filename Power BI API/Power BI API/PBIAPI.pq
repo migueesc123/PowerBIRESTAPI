@@ -1199,8 +1199,8 @@ let
 	webCall = Table.AddColumn(trimColumns, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/stages") )[value],{"order", "workspaceId", "workspaceName"},MissingField.UseNull) otherwise null ),
     expandColumn = Table.ExpandTableColumn(webCall, "Column1", {"order", "workspaceId", "workspaceName"}, {"order", "workspaceId", "workspaceName"}),
     changeType = Table.TransformColumnTypes(expandColumn,{{"workspaceId", type text}, {"workspaceName", type text}, {"order", Int64.Type}}),
-    renameColumns = Table.RenameColumns(changeType,{{"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}})
-    typeOfStage = Table.AddColumn(renameColumns,"Name of Stage",each if [#"Stage Order"] = 0 then "Development" else if [#"Stage Order"] = 1 then "Test" else "Production")
+    renameColumns = Table.RenameColumns(changeType,{{"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}}),
+    typeOfStage = Table.AddColumn(renameColumns,"Name of Stage",each if [#"Stage Order"] = 0 then "Development" else if [#"Stage Order"] = 1 then "Test" else "Production", type text)
 in
     typeOfStage;
 
