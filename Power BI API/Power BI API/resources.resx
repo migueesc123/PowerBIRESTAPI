@@ -220,6 +220,9 @@
   <data name="GETDataResult" xml:space="preserve">
     <value>Raw response for all the datasets in the Personal Workspace of the authenticated user.</value>
   </data>
+  <data name="ExecuteQuery" xml:space="preserve">
+    <value>Execute DAX Query</value>
+  </data>
   <data name="PersonalDashboards" xml:space="preserve">
     <value>Dashboards (Personal)</value>
   </data>

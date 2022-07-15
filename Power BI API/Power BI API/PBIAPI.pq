@@ -112,7 +112,8 @@ let
 	objects = #table(
             {"Name","Key","Data","ItemKind","ItemName","IsLeaf"},{
             {Extension.LoadString("GETData"),"GETData",PowerBIRESTAPI.GETData,"Function","GETData",true},
-            {"Event Activity Log", "EventActivityLog", PowerBIRESTAPI.EventActivityLog , "Function", "GetActivityLog", true}
+            {"Event Activity Log", "EventActivityLog", PowerBIRESTAPI.EventActivityLog , "Function", "GetActivityLog", true},
+			{Extension.LoadString("ExecuteQuery"),"ExecuteQuery",PowerBIRESTAPI.ExecuteQuery,"Function","ExecuteQuery",true}
         }),
 	NavTable = Table.ForceToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
@@ -236,6 +237,133 @@ let
 	source = Json.Document(Web.Contents("https://api.powerbi.com/v1.0/myorg", [RelativePath = path]))
 in
 	source;
+
+
+[DataSource.Kind = "PowerBIRESTAPI"]
+shared pbiAdminAPI.ExecuteQuery = Value.ReplaceType(ExecuteQuery,ExecuteQueryType);
+
+ExecuteQueryType =
+    type function (optional datasetId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Dataset ID",
+                Documentation.FieldDescription = "ID of dataset that you want to query.",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        ), optional daxQuery as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "DAX Query",
+                Documentation.FieldDescription = "DAX Query that will be executed against dataset. Please dont include ""EVALUATE"" in a code. Connector will automaticaly adds it.",
+                Documentation.SampleValues = {
+                    "VALUES(Table[Column])"
+                }
+            ]
+        ), optional impersonateUPN as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "UPN of Impersonated User",
+                Documentation.FieldDescription = "UPN of user that you want to impersonate. !!! This parameter will work only against dataset with RLS !!!",
+                Documentation.SampleValues = {
+                    "example@domain.com"
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "pbiAdminAPI.ExecuteQuery",
+        Documentation.LongDescription = "This call execute query by EXECUTE QUERY endpoint. It can be done only if you have this endpoint avaiable.",
+        Documentation.Examples = {
+            [
+                Code = "=pbiAdminAPI.ExecuteQuery(""xxx-xxxx-yyxa..."",""xxx-xxxx-yyxa..."",""VALUES(Table[Column])"",""example@domain.com"")",
+                Result = ""
+            ]
+        }
+    ];
+
+ExecuteQuery =
+    (optional datasetId as text, optional daxQuery as text, optional impersonateUPN as text) =>
+        let
+            functionVarTester =
+                if
+                    (datasetId <> null and datasetId <> "") and (daxQuery <> null and daxQuery <> "")
+                then
+                    let
+                        impersonate =
+                            if
+                                impersonateUPN
+                                <> null and impersonateUPN
+                                <> ""
+                            then
+                                ", ""impersonatedUserName"": """
+                                & impersonateUPN
+                                & """"
+                            else
+                                "",
+                        apiCall =
+                            Json.Document(
+                                Web.Contents(
+                                    "https://api.powerbi.com/v1.0/myorg/",
+                                    [
+                                        RelativePath =
+                                            "datasets/"
+                                            & datasetId
+                                            & "/executeQueries",
+                                        Headers = [
+                                            #"Content-Type" = "application/json"
+                                        ],
+                                        Content =
+                                            Text.ToBinary(
+                                                "
+                                            {
+                                                ""queries"":[
+                                                    {
+                                                        ""query"": ""EVALUATE "
+                                                & daxQuery
+                                                & """ 
+                                                    }
+                                                ],
+                                                ""serializerSettings"":{
+                                                    ""includeNulls"": false
+                                                }"
+                                                & impersonate
+                                                & "
+                                            }
+                                            "
+                                            )
+                                    ]
+                                )
+                            ),
+                        output =
+                            let
+                                initSource = apiCall[results]?{0}?[tables]?{0}?[rows]?,
+                                namesOfColumns = List.Buffer(Record.FieldNames(initSource{0})),
+                                correctedColumnsNames =
+                                    List.Transform(
+                                        namesOfColumns,
+                                        each Text.BetweenDelimiters(_, "[", "]")
+                                    ),
+                                tableCreator = Table.FromList(
+                                        initSource,
+                                        Record.FieldValues,
+                                        correctedColumnsNames
+                                    )
+                            in
+                                tableCreator
+                    in
+                        output
+                else
+                    #table(type table [Response = text],{{"Please fill parameters of function."}})
+        in
+            functionVarTester;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 shared	PowerBIRESTAPI.GroupsList = () =>
