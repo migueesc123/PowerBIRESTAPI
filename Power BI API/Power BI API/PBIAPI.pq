@@ -107,6 +107,7 @@ let
             {Extension.LoadString("AppUsersAsAdmin"),"AppUsersAsAdmin",PowerBIRESTAPI.AppUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GroupsAsAdmin"),"GroupsAsAdmin",PowerBIRESTAPI.GroupsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GroupUsersAsAdmin"),"GroupUsersAsAdmin",PowerBIRESTAPI.GroupUsersAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("GatewaysAsAdmin"),"GatewaysAsAdmin",PowerBIRESTAPI.GatewaysAsAdmin(),"Table","Table",true},
             {Extension.LoadString("ReportsAsAdmin"),"ReportsAsAdmin",PowerBIRESTAPI.ReportsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DashboardsAsAdmin"),"DashboardsAsAdmin",PowerBIRESTAPI.DashboardsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowsAsAdmin"),"DataflowsAsAdmin",PowerBIRESTAPI.DataflowsAsAdmin(),"Table","Table",true},
@@ -688,6 +689,55 @@ let
 	ChangeType = Table.TransformColumnTypes(RemoveColumns,{{"Gateway ID", type text}, {"Gateway Name", type text}, {"Gateway Contact Information", type text}, {"Gateway Version", type text}, {"Gateway Machine Name", type text}, {"Gateway Department", type text}, {"Gateway Status", type text}})
 in
 	ChangeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GatewaysAsAdmin = () =>
+        let
+            apiCall =
+                Json.Document(
+                    Web.Contents(
+                        "https://api.powerbi.com/v2.0/myorg",
+                        [
+                            RelativePath = "gatewayclusters?$expand=permissions,memberGateways&$skip=0",
+                            Headers = [
+                                #"Content-Type" = "application/json"
+                            ]
+                        ]
+                    )
+                ),
+            output =
+                #table(
+                    type table [
+                        id = text,
+                        name = text,
+                        #"type" = text,
+                        loadBalancingSettings = text,
+                        options = record,
+                        staticCapabilities = number,
+                        permissions = list,
+                        memberGateways = list,
+                        datasources = list,
+                        maxPermission = record
+                    ],
+                    List.Transform(
+                        apiCall[value],
+                        each
+                            {
+                                _[id]?,
+                                _[name]?,
+                                _[#"type"]?,
+                                _[loadBalancingSettings]?,
+                                _[options]?,
+                                Number.From(_[staticCapabilities]?),
+                                _[permissions]?,
+                                _[memberGateways]?,
+                                _[datasources]?,
+                                _[maxPermission]?
+                            }
+                    )
+                )
+        in
+            output;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GatewayDataSourceStatus = () =>

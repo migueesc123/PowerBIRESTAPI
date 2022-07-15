@@ -177,6 +177,9 @@
   <data name="Gateways" xml:space="preserve">
     <value>Gateways</value>
   </data>
+  <data name="GatewaysAsAdmin" xml:space="preserve">
+    <value>Gateways (Admin)</value>
+  </data>
   <data name="AppsAsAdmin" xml:space="preserve">
     <value>Apps (Admin)</value>
   </data>
