@@ -325,4 +325,10 @@
   <data name="Goals" xml:space="preserve">
     <value>Metrics - Goals</value>
   </data>
+  <data name="ScannerAPIInfo" xml:space="preserve">
+    <value>ScannerAPI - Get Info</value>
+  </data>
+  <data name="ScannerAPIStatusAndResult" xml:space="preserve">
+    <value>ScannerAPI - Results of Scan</value>
+  </data>
 </root>

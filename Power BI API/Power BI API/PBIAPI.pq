@@ -147,7 +147,9 @@ let
             {"Event Activity Log", "EventActivityLog", PowerBIRESTAPI.EventActivityLog , "Function", "GetActivityLog", true},
             {Extension.LoadString("ExecuteQuery"),"ExecuteQuery",PowerBIRESTAPI.ExecuteQuery,"Function","ExecuteQuery",true},
             {Extension.LoadString("Scorecards"),"Scorecards",PowerBIRESTAPI.Scorecards,"Function","Scorecards",true},
-            {Extension.LoadString("Goals"),"Goals",PowerBIRESTAPI.Goals,"Function","Goals",true}
+            {Extension.LoadString("Goals"),"Goals",PowerBIRESTAPI.Goals,"Function","Goals",true},
+            {Extension.LoadString("ScannerAPIInfo"),"ScannerAPIInfo",PowerBIRESTAPI.ScannerAPIInfo,"Function","ScannerAPIInfo",true},
+            {Extension.LoadString("ScannerAPIStatusAndResult"),"ScannerAPIStatusAndResult",PowerBIRESTAPI.ScannerAPIStatusAndResult,"Function","ScannerAPIStatusAndResult",true}
         }),
 	NavTable = Table.ForceToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
@@ -1465,6 +1467,223 @@ Goals =
                         {
                             {
                                 "Hmm... Something is not quite right. Please check inserted parameters or try it later."
+                            }
+                        }
+                    )
+        in
+            functionVarTester;
+
+//**** Scanner API - GET INFO()
+[
+    DataSource.Kind = "PowerBIRESTAPI"
+]
+shared PowerBIRESTAPI.ScannerAPIInfo =
+    Value.ReplaceType(
+        ScannerAPIInfo,
+        ScannerAPIInfoType
+    );
+
+ScannerAPIInfoType =
+    type function (optional workspaceId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Workspace ID",
+                Documentation.FieldDescription = "Workspace ID from where you want return the Scorecards",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "PowerBIRESTAPI.ScannerAPIInfo",
+        Documentation.LongDescription =
+            "!!! This call only starts a scanning. For results of this scanning dont forget to call function for Results !!!
+        Returns ONLY and ONLY ""Id"" of scanning that is required for other calls.",
+        Documentation.Examples = {
+            [
+                Code = "=PowerBIRESTAPI.ScannerAPIInfo(""xxx-xxxx-yyxa..."")",
+                Result = ""
+            ]
+        }
+    ];
+
+ScannerAPIInfo =
+    (optional workspaceId as text) =>
+        let
+            functionVarTester =
+                if
+                    workspaceId
+                    <> null and workspaceId
+                    <> ""
+                then
+                    let
+                        apiCall =
+                            Json.Document(
+                                Web.Contents(
+                                    "https://api.powerbi.com/v1.0/myorg",
+                                    [
+                                        RelativePath = "admin/workspaces/getInfo?lineage=True&datasourceDetails=True&datasetSchema=True&datasetExpressions=True&getArtifactUsers=True",
+                                        Headers = [
+                                            #"Content-Type" = "application/json"
+                                        ],
+                                        Content =
+                                            Text.ToBinary(
+                                                "{ ""workspaces"": [ """
+                                                & workspaceId
+                                                & """]}"
+                                            )
+                                    ]
+                                )
+                            ),
+                        output =
+                            #table(
+                                type table [#"Id of Scan" = text],
+                                {
+                                    {
+                                        apiCall[id]?
+                                    }
+                                }
+                            )
+                    in
+                        output
+                else
+                    #table(
+                        type table [Response = text],
+                        {
+                            {
+                                "Please fill parameter of function."
+                            }
+                        }
+                    )
+        in
+            functionVarTester;
+
+//**** Scanner API - GET STATUS AND RESULTS
+[
+    DataSource.Kind = "PowerBIRESTAPI"
+]
+shared PowerBIRESTAPI.ScannerAPIStatusAndResult =
+    Value.ReplaceType(
+        ScannerAPIStatusAndResult,
+        ScannerAPIStatusAndResultType
+    );
+
+ScannerAPIStatusAndResultType =
+    type function (optional scanId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Scan ID",
+                Documentation.FieldDescription = "Scan ID that has been returned from function ""Scanner API - Get Info""",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "PowerBIRESTAPI.ScannerAPIStatusAndResultType",
+        Documentation.LongDescription = "This function will validate if the scan is successfully finished, and in that case, it returns data.",
+        Documentation.Examples = {
+            [
+                Code = "=PowerBIRESTAPI.ScannerAPIStatusAndResultType(""xxx-xxxx-yyxa..."")",
+                Result = ""
+            ]
+        }
+    ];
+
+ScannerAPIStatusAndResult =
+    (optional scanId as text) =>
+        let
+            functionVarTester =
+                if scanId <> null and scanId <> "" then
+                    let
+                        statusCall =
+                            Json.Document(
+                                Web.Contents(
+                                    "https://api.powerbi.com/v1.0/myorg",
+                                    [
+                                        RelativePath = "admin/workspaces/scanStatus/" & scanId,
+                                        Headers = [
+                                            #"Content-Type" = "application/json"
+                                        ]
+                                    ]
+                                )
+                            )
+                                [status],
+                        validationForNextSteps =
+                            if statusCall = "Succeeded" then
+                                let
+                                    resultCall =
+                                        Json.Document(
+                                            Web.Contents(
+                                                "https://api.powerbi.com/v1.0/myorg",
+                                                [
+                                                    RelativePath = "admin/workspaces/scanResult/" & scanId,
+                                                    Headers = [
+                                                        #"Content-Type" = "application/json"
+                                                    ]
+                                                ]
+                                            )
+                                        ),
+                                    resultOutput =
+                                        #table(
+                                            type table [
+                                                id = text,
+                                                name = text,
+                                                #"type" = text,
+                                                state = text,
+                                                isOnDedicatedCapacity = text,
+                                                capacityId = text,
+                                                reports = list,
+                                                dashboards = list,
+                                                datasets = list,
+                                                dataflows = list,
+                                                datamarts = list,
+                                                users = list
+                                            ],
+                                            List.Transform(
+                                                resultCall[workspaces],
+                                                each
+                                                    {
+                                                        _[id]?,
+                                                        _[name]?,
+                                                        _[#"type"]?,
+                                                        _[state]?,
+                                                        _[isOnDedicatedCapacity]?,
+                                                        _[capacityId]?,
+                                                        _[reports]?,
+                                                        _[dashboards]?,
+                                                        _[datasets]?,
+                                                        _[dataflows]?,
+                                                        _[datamarts]?,
+                                                        _[users]?
+                                                    }
+                                            )
+                                        )
+                                in
+                                    resultOutput
+                            else
+                                #table(
+                                    type table [Response = text],
+                                    {
+                                        {
+                                            "Scan is not completed yet. Try it later."
+                                        }
+                                    }
+                                )
+                    in
+                        validationForNextSteps
+                else
+                    #table(
+                        type table [Response = text],
+                        {
+                            {
+                                "Please fill parameter of function."
                             }
                         }
                     )
