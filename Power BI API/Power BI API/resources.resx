@@ -265,6 +265,9 @@
   <data name="GETRawData" xml:space="preserve">
     <value>GETRawData</value>
   </data>
+  <data name="ExecuteQuery" xml:space="preserve">
+    <value>Execute DAX Query</value>
+  </data>
   <data name="GETRawDataCode" xml:space="preserve">
     <value>=PowerBIRESTAPI.GETRawData(""datasets"") Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
   </data>
