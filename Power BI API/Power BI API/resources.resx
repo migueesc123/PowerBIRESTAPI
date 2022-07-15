@@ -319,4 +319,10 @@
   <data name="ReportPages" xml:space="preserve">
     <value>Report Pages</value>
   </data>
+  <data name="Scorecards" xml:space="preserve">
+    <value>Metrics - Scorecards</value>
+  </data>
+  <data name="Goals" xml:space="preserve">
+    <value>Metrics - Goals</value>
+  </data>
 </root>
