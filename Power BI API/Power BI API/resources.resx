@@ -136,7 +136,7 @@
     <value>Datasets</value>
   </data>
   <data name="Datasources" xml:space="preserve">
-    <value>Datasources</value>
+    <value>Dataset Datasources</value>
   </data>
   <data name="Dataflows" xml:space="preserve">
     <value>Dataflows</value>
@@ -177,6 +177,12 @@
   <data name="Gateways" xml:space="preserve">
     <value>Gateways</value>
   </data>
+  <data name="AppsAsAdmin" xml:space="preserve">
+    <value>Apps (Admin)</value>
+  </data>
+  <data name="AppUsersAsAdmin" xml:space="preserve">
+    <value>App Users (Admin)</value>
+  </data>
   <data name="GroupsAsAdmin" xml:space="preserve">
     <value>Workspaces (Admin)</value>
   </data>
@@ -185,6 +191,18 @@
   </data>
   <data name="ReportsAsAdmin" xml:space="preserve">
     <value>Reports (Admin)</value>
+  </data>
+  <data name="ReportUsersAsAdmin" xml:space="preserve">
+    <value>Report Users (Admin)</value>
+  </data>
+  <data name="DatasetUsersAsAdmin" xml:space="preserve">
+    <value>Dataset Users (Admin)</value>
+  </data>
+  <data name="DataflowUsersAsAdmin" xml:space="preserve">
+    <value>Dataflow Users (Admin)</value>
+  </data>
+  <data name="DashboardUsersAsAdmin" xml:space="preserve">
+    <value>Dashboard Users (Admin)</value>
   </data>
   <data name="DashboardsAsAdmin" xml:space="preserve">
     <value>Dashboards (Admin)</value>
@@ -212,16 +230,13 @@
             Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
   </data>
   <data name="GETDataDescription" xml:space="preserve">
-    <value>Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints.</value>
+    <value>Returns raw JSON from any of the https://api.powerbi.com/v1.0/myorg endpoints.</value>
   </data>
   <data name="GETDataLongDescription" xml:space="preserve">
     <value />
   </data>
   <data name="GETDataResult" xml:space="preserve">
     <value>Raw response for all the datasets in the Personal Workspace of the authenticated user.</value>
-  </data>
-  <data name="ExecuteQuery" xml:space="preserve">
-    <value>Execute DAX Query</value>
   </data>
   <data name="PersonalDashboards" xml:space="preserve">
     <value>Dashboards (Personal)</value>
@@ -237,5 +252,68 @@
   </data>
   <data name="PersonalApps" xml:space="preserve">
     <value>Apps (Personal)</value>
+  </data>
+  <data name="Experimental" xml:space="preserve">
+    <value>Experimental</value>
+  </data>
+  <data name="GatewayDataSourceStatus" xml:space="preserve">
+    <value>Gateway Data Source Status</value>
+  </data>
+  <data name="CapacityRefreshablesAsAdmin" xml:space="preserve">
+    <value>Capacity Refreshables (Admin)</value>
+  </data>
+  <data name="GETRawData" xml:space="preserve">
+    <value>GETRawData</value>
+  </data>
+  <data name="ExecuteQuery" xml:space="preserve">
+    <value>Execute DAX Query</value>
+  </data>
+  <data name="GETRawDataCode" xml:space="preserve">
+    <value>=PowerBIRESTAPI.GETRawData(""datasets"") Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
+  </data>
+  <data name="GETRawDataDescription" xml:space="preserve">
+    <value>Returns raw data from any of the https://api.powerbi.com/v1.0/myorg endpoints.</value>
+  </data>
+  <data name="GETRawDataLongDescription" xml:space="preserve">
+    <value />
+  </data>
+  <data name="GETRawDataResult" xml:space="preserve">
+    <value>Raw response for all the datasets in the Personal Workspace of the authenticated user.</value>
+  </data>
+  <data name="DataflowUpstreamDataflows" xml:space="preserve">
+    <value>Upstream Dataflows</value>
+  </data>
+  <data name="DatasetToDataflowLinks" xml:space="preserve">
+    <value>Dataset To Dataflow Links</value>
+  </data>
+  <data name="DataflowsTransactions" xml:space="preserve">
+    <value>Dataflows Transactions</value>
+  </data>
+  <data name="PipelineUsersAsAdmin" xml:space="preserve">
+    <value>Deployment Pipeline Users (Admin)</value>
+  </data>
+  <data name="PipelineStagesAsAdmin" xml:space="preserve">
+    <value>Deployment Pipeline Stages (Admin)</value>
+  </data>
+  <data name="PipelinesAsAdmin" xml:space="preserve">
+    <value>Deployment Pipelines (Admin)</value>
+  </data>
+  <data name="PipelineUsers" xml:space="preserve">
+    <value>Deployment Pipeline Users</value>
+  </data>
+  <data name="PipelineStages" xml:space="preserve">
+    <value>Deployment Pipeline Stages</value>
+  </data>
+  <data name="Pipelines" xml:space="preserve">
+    <value>Deployment Pipelines</value>
+  </data>
+  <data name="PipelineOperations" xml:space="preserve">
+    <value>Deployment Pipeline Operations</value>
+  </data>
+  <data name="PipelineStageArtifacts" xml:space="preserve">
+    <value>Deployment Pipeline Stage Artifacts</value>
+  </data>
+  <data name="ReportPages" xml:space="preserve">
+    <value>Report Pages</value>
   </data>
 </root>
