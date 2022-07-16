@@ -1474,92 +1474,81 @@ Goals =
             functionVarTester;
 
 //**** Scanner API - GET INFO()
-[
-    DataSource.Kind = "PowerBIRESTAPI"
-]
-shared PowerBIRESTAPI.ScannerAPIInfo =
-    Value.ReplaceType(
-        ScannerAPIInfo,
-        ScannerAPIInfoType
-    );
+[DataSource.Kind = "PowerBIRESTAPI"]
+shared PowerBIRESTAPI.ScannerAPIInfo = Value.ReplaceType(ScannerAPIInfo, ScannerAPIInfoType);
 
-ScannerAPIInfoType =
-    type function (optional workspaceId as
-        (
-            type text
-            meta
-            [
-                Documentation.FieldCaption = "Workspace ID",
-                Documentation.FieldDescription = "Workspace ID from where you want return the Scorecards",
-                Documentation.SampleValues = {
-                    "xxx-xxxx-yyxa..."
-                }
-            ]
-        )) as table
-    meta
-    [
-        Documentation.Name = "PowerBIRESTAPI.ScannerAPIInfo",
-        Documentation.LongDescription =
-            "!!! This call only starts a scanning. For results of this scanning dont forget to call function for Results !!!
+ScannerAPIInfoType = type function (
+    optional workspaceId as (
+        type text meta [
+            Documentation.FieldCaption = "Workspace ID",
+            Documentation.FieldDescription = "Workspace ID on what will scanning will be started.",
+            Documentation.SampleValues = {"xxx-xxxx-yyxa..."}
+        ]
+    ),
+    optional listWithWokspaceIds as (
+        type list meta [
+            Documentation.FieldCaption = "List with Workspace IDs",
+            Documentation.FieldDescription = "List of Workspace IDs on what will scanning will be started.",
+            Documentation.SampleValues = {"{xxx-xxxx-yyxa...,xxx-xxxx-yyxa...}"}
+        ]
+    )
+) as table meta [
+    Documentation.Name = "pbiAdminAPI.ScannerAPIInfo",
+    Documentation.LongDescription = "!!! This call only starts a scanning. For results of this scanning dont forget to call function for Results !!!
         Returns ONLY and ONLY ""Id"" of scanning that is required for other calls.",
-        Documentation.Examples = {
-            [
-                Code = "=PowerBIRESTAPI.ScannerAPIInfo(""xxx-xxxx-yyxa..."")",
-                Result = ""
-            ]
-        }
-    ];
+    Documentation.Examples = {[Code = "=pbiAdminAPI.ScannerAPIInfo(""xxx-xxxx-yyxa..."")", Result = ""]}
+];
 
-ScannerAPIInfo =
-    (optional workspaceId as text) =>
-        let
-            functionVarTester =
-                if
-                    workspaceId
-                    <> null and workspaceId
-                    <> ""
-                then
-                    let
-                        apiCall =
-                            Json.Document(
-                                Web.Contents(
-                                    "https://api.powerbi.com/v1.0/myorg",
-                                    [
-                                        RelativePath = "admin/workspaces/getInfo?lineage=True&datasourceDetails=True&datasetSchema=True&datasetExpressions=True&getArtifactUsers=True",
-                                        Headers = [
-                                            #"Content-Type" = "application/json"
-                                        ],
-                                        Content =
-                                            Text.ToBinary(
-                                                "{ ""workspaces"": [ """
-                                                & workspaceId
-                                                & """]}"
-                                            )
-                                    ]
+ScannerAPIInfo = (optional workspaceId as text, optional listWithWokspaceIds as list) =>
+    let
+        functionVarTester =
+            if
+                (workspaceId <> null and workspaceId <> "")
+                or (listWithWokspaceIds <> null and listWithWokspaceIds <> {})
+            then
+                let
+                    apiCall = (wsId as text) => Json.Document(
+                        Web.Contents(
+                            "https://api.powerbi.com/v1.0/myorg/",
+                            [
+                                RelativePath = "admin/workspaces/getInfo?lineage=True&datasourceDetails=True&datasetSchema=True&datasetExpressions=True&getArtifactUsers=True",
+                                Headers = [#"Content-Type" = "application/json"],
+                                Content = Text.ToBinary("{ ""workspaces"": [ " & wsId & "]}")
+                            ]
+                        )
+                    ),
+                    ids =
+                        if workspaceId = null then
+                            let
+                                split = List.Split(listWithWokspaceIds, 100),
+                                transformator = List.Transform(
+                                    split,
+                                    each
+                                        let
+                                            insertedList = _,
+                                            idCreator =
+                                                """"
+                                                & List.Accumulate(
+                                                    List.RemoveFirstN(insertedList, 1),
+                                                    List.First(insertedList),
+                                                    (state, current) => state & """,""" & current
+                                                )
+                                                & """",
+                                            call = apiCall(idCreator)
+                                        in
+                                            call
                                 )
-                            ),
-                        output =
-                            #table(
-                                type table [#"Id of Scan" = text],
-                                {
-                                    {
-                                        apiCall[id]?
-                                    }
-                                }
-                            )
-                    in
-                        output
-                else
-                    #table(
-                        type table [Response = text],
-                        {
-                            {
-                                "Please fill parameter of function."
-                            }
-                        }
-                    )
-        in
-            functionVarTester;
+                            in
+                                transformator
+                        else
+                            {apiCall("""" & workspaceId & """")},
+                    output = #table(type table [#"Id of Scan" = text], List.Transform(ids,each {[id]?}))
+                in
+                    output
+            else
+                #table(type table [Response = text], {{"Please fill parameter of function."}})
+    in
+        functionVarTester;
 
 //**** Scanner API - GET STATUS AND RESULTS
 [
