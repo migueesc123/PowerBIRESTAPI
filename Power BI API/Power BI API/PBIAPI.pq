@@ -131,7 +131,8 @@ let
             {Extension.LoadString("DashboardUsersAsAdmin"),"DashboardUsersAsAdmin",PowerBIRESTAPI.DashboardUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GatewayDataSourceStatus"),"GatewayDataSourceStatus",PowerBIRESTAPI.GatewayDataSourceStatus(),"Table","Table",true},
             {Extension.LoadString("DatasetDatasourcesAsAdmin"),"DatasetDatasourcesAsAdmin",PowerBIRESTAPI.DatasetDatasourcesAsAdmin(),"Table","Table",true},
-            {Extension.LoadString("DataflowDatasourcesAsAdmin"),"DataflowDatasourcesAsAdmin",PowerBIRESTAPI.DataflowDatasourcesAsAdmin(),"Table","Table",true}
+            {Extension.LoadString("DataflowDatasourcesAsAdmin"),"DataflowDatasourcesAsAdmin",PowerBIRESTAPI.DataflowDatasourcesAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("GatewaysAsAdmin"),"GatewaysAsAdmin",PowerBIRESTAPI.GatewaysAsAdmin(),"Table","Table",true}
         }),
         NavTable = Table.ToNavigationTable(objects,{"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
@@ -143,7 +144,12 @@ let
             {"Name","Key","Data","ItemKind","ItemName","IsLeaf"},{
             {Extension.LoadString("GETData"),"GETData",PowerBIRESTAPI.GETData,"Function","GETData",true},
             {Extension.LoadString("GETRawData"),"GETRawData",PowerBIRESTAPI.GETRawData,"Function","GETRawData",true},
-            {"Event Activity Log", "EventActivityLog", PowerBIRESTAPI.EventActivityLog , "Function", "GetActivityLog", true}
+            {"Event Activity Log", "EventActivityLog", PowerBIRESTAPI.EventActivityLog , "Function", "GetActivityLog", true},
+            {Extension.LoadString("ExecuteQuery"),"ExecuteQuery",PowerBIRESTAPI.ExecuteQuery,"Function","ExecuteQuery",true},
+            {Extension.LoadString("Scorecards"),"Scorecards",PowerBIRESTAPI.Scorecards,"Function","Scorecards",true},
+            {Extension.LoadString("Goals"),"Goals",PowerBIRESTAPI.Goals,"Function","Goals",true},
+            {Extension.LoadString("ScannerAPIInfo"),"ScannerAPIInfo",PowerBIRESTAPI.ScannerAPIInfo,"Function","ScannerAPIInfo",true},
+            {Extension.LoadString("ScannerAPIStatusAndResult"),"ScannerAPIStatusAndResult",PowerBIRESTAPI.ScannerAPIStatusAndResult,"Function","ScannerAPIStatusAndResult",true}
         }),
 	NavTable = Table.ForceToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
@@ -301,6 +307,132 @@ shared PowerBIRESTAPI.GETRawData = Value.ReplaceType(GETRawData, GETRawDataType)
     ]; 
 
 GETRawData = (optional path as text) => let source = Web.Contents("https://api.powerbi.com/v1.0/myorg",[RelativePath = path,ManualStatusHandling = {400}]) in source;
+
+[DataSource.Kind = "PowerBIRESTAPI"]
+shared PowerBIRESTAPI.ExecuteQuery = Value.ReplaceType(ExecuteQuery,ExecuteQueryType);
+
+ExecuteQueryType =
+    type function (optional datasetId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Dataset ID",
+                Documentation.FieldDescription = "ID of dataset that you want to query.",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        ), optional daxQuery as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "DAX Query",
+                Documentation.FieldDescription = "DAX Query that will be executed against dataset. Please dont include ""EVALUATE"" in a code. Connector will automaticaly adds it.",
+                Documentation.SampleValues = {
+                    "VALUES(Table[Column])"
+                }
+            ]
+        ), optional impersonateUPN as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "UPN of Impersonated User",
+                Documentation.FieldDescription = "UPN of user that you want to impersonate. !!! This parameter will work only against dataset with RLS !!!",
+                Documentation.SampleValues = {
+                    "example@domain.com"
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "PowerBIRESTAPI.ExecuteQuery",
+        Documentation.LongDescription = "This call execute query by EXECUTE QUERY endpoint. It can be done only if you have this endpoint avaiable.",
+        Documentation.Examples = {
+            [
+                Code = "=PowerBIRESTAPI.ExecuteQuery(""xxx-xxxx-yyxa..."",""xxx-xxxx-yyxa..."",""VALUES(Table[Column])"",""example@domain.com"")",
+                Result = ""
+            ]
+        }
+    ];
+
+ExecuteQuery =
+    (optional datasetId as text, optional daxQuery as text, optional impersonateUPN as text) =>
+        let
+            functionVarTester =
+                if
+                    (datasetId <> null and datasetId <> "") and (daxQuery <> null and daxQuery <> "")
+                then
+                    let
+                        impersonate =
+                            if
+                                impersonateUPN
+                                <> null and impersonateUPN
+                                <> ""
+                            then
+                                ", ""impersonatedUserName"": """
+                                & impersonateUPN
+                                & """"
+                            else
+                                "",
+                        apiCall =
+                            Json.Document(
+                                Web.Contents(
+                                    "https://api.powerbi.com/v1.0/myorg/",
+                                    [
+                                        RelativePath =
+                                            "datasets/"
+                                            & datasetId
+                                            & "/executeQueries",
+                                        Headers = [
+                                            #"Content-Type" = "application/json"
+                                        ],
+                                        Content =
+                                            Text.ToBinary(
+                                                "
+                                            {
+                                                ""queries"":[
+                                                    {
+                                                        ""query"": ""EVALUATE "
+                                                & daxQuery
+                                                & """ 
+                                                    }
+                                                ],
+                                                ""serializerSettings"":{
+                                                    ""includeNulls"": false
+                                                }"
+                                                & impersonate
+                                                & "
+                                            }
+                                            "
+                                            )
+                                    ]
+                                )
+                            ),
+                        output =
+                            let
+                                initSource = apiCall[results]?{0}?[tables]?{0}?[rows]?,
+                                namesOfColumns = List.Buffer(Record.FieldNames(initSource{0})),
+                                correctedColumnsNames =
+                                    List.Transform(
+                                        namesOfColumns,
+                                        each Text.BetweenDelimiters(_, "[", "]")
+                                    ),
+                                tableCreator = Table.FromList(
+                                        initSource,
+                                        Record.FieldValues,
+                                        correctedColumnsNames
+                                    )
+                            in
+                                tableCreator
+                    in
+                        output
+                else
+                    #table(type table [Response = text],{{"Please fill parameters of function."}})
+        in
+            functionVarTester;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 shared	PowerBIRESTAPI.GroupsList = () =>
@@ -561,6 +693,55 @@ let
 	ChangeType = Table.TransformColumnTypes(RemoveColumns,{{"Gateway ID", type text}, {"Gateway Name", type text}, {"Gateway Contact Information", type text}, {"Gateway Version", type text}, {"Gateway Machine Name", type text}, {"Gateway Department", type text}, {"Gateway Status", type text}})
 in
 	ChangeType;
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.GatewaysAsAdmin = () =>
+        let
+            apiCall =
+                Json.Document(
+                    Web.Contents(
+                        "https://api.powerbi.com/v2.0/myorg",
+                        [
+                            RelativePath = "gatewayclusters?$expand=permissions,memberGateways&$skip=0",
+                            Headers = [
+                                #"Content-Type" = "application/json"
+                            ]
+                        ]
+                    )
+                ),
+            output =
+                #table(
+                    type table [
+                        id = text,
+                        name = text,
+                        #"type" = text,
+                        loadBalancingSettings = text,
+                        options = record,
+                        staticCapabilities = number,
+                        permissions = list,
+                        memberGateways = list,
+                        datasources = list,
+                        maxPermission = record
+                    ],
+                    List.Transform(
+                        apiCall[value],
+                        each
+                            {
+                                _[id]?,
+                                _[name]?,
+                                _[#"type"]?,
+                                _[loadBalancingSettings]?,
+                                _[options]?,
+                                Number.From(_[staticCapabilities]?),
+                                _[permissions]?,
+                                _[memberGateways]?,
+                                _[datasources]?,
+                                _[maxPermission]?
+                            }
+                    )
+                )
+        in
+            output;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GatewayDataSourceStatus = () =>
@@ -1022,9 +1203,10 @@ let
 	webCall = Table.AddColumn(trimColumns, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/stages") )[value],{"order", "workspaceId", "workspaceName"},MissingField.UseNull) otherwise null ),
     expandColumn = Table.ExpandTableColumn(webCall, "Column1", {"order", "workspaceId", "workspaceName"}, {"order", "workspaceId", "workspaceName"}),
     changeType = Table.TransformColumnTypes(expandColumn,{{"workspaceId", type text}, {"workspaceName", type text}, {"order", Int64.Type}}),
-    renameColumns = Table.RenameColumns(changeType,{{"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}})
+    renameColumns = Table.RenameColumns(changeType,{{"order", "Stage Order"}, {"workspaceId", "Workspace ID"}, {"workspaceName", "Workspace Name"}}),
+    typeOfStage = Table.AddColumn(renameColumns,"Name of Stage",each if [#"Stage Order"] = 0 then "Development" else if [#"Stage Order"] = 1 then "Test" else "Production", type text)
 in
-    renameColumns;
+    typeOfStage;
 
 [DataSource.Kind="PowerBIRESTAPI"]
 	PowerBIRESTAPI.GroupsPipelineStageArtifacts = () =>
@@ -1035,6 +1217,468 @@ let
 	webCall = Table.AddColumn(changeType, "Column1", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/pipelines/" & Text.From([Pipeline ID])&"/stages/"& Text.From([Stage Order])&"/artifacts") )[value] ) otherwise null )
 in
     webCall;
+
+[
+    DataSource.Kind = "PowerBIRESTAPI"
+]
+shared PowerBIRESTAPI.Scorecards =
+    Value.ReplaceType(
+        Scorecards,
+        ScorecardsType
+    );
+
+ScorecardsType =
+    type function (optional workspaceId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Workspace ID",
+                Documentation.FieldDescription = "Workspace ID from where you want return the Scorecards",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "PowerBIRESTAPI.Scorecards",
+        Documentation.LongDescription =
+            "!!! This call can be used only on Groups where you have access !!!
+        Returns all Scorecards that are in selected workspace",
+        Documentation.Examples = {
+            [
+                Code = "=PowerBIRESTAPI.Scorecards(""xxx-xxxx-yyxa..."")",
+                Result = ""
+            ]
+        }
+    ];
+
+Scorecards =
+    (optional workspaceId as text) =>
+        let
+            functionVarTester =
+                if
+                    workspaceId
+                    <> null and workspaceId
+                    <> ""
+                then
+                    let
+                        apiCall =
+                            Json.Document(
+                                Web.Contents(
+                                    "https://api.powerbi.com/v1.0/myorg",
+                                    [
+                                        RelativePath = "groups/" & workspaceId & "/scorecards",
+                                        Headers = [
+                                            #"Content-Type" = "application/json"
+                                        ]
+                                    ]
+                                )
+                            ),
+                        output =
+                            #table(
+                                type table [
+                                    id = text,
+                                    name = text,
+                                    contact = text,
+                                    lastModifiedBy = text,
+                                    createdTime = datetime,
+                                    lastModifiedTime = datetime,
+                                    provisioningStatus = text,
+                                    groupId = text,
+                                    datasetId = text,
+                                    reportId = text,
+                                    statuses = list,
+                                    permissions = text,
+                                    columnSettings = list
+                                ],
+                                List.Transform(
+                                    apiCall[value],
+                                    each
+                                        {
+                                            _[id]?,
+                                            _[name]?,
+                                            _[contact]?,
+                                            _[lastModifiedBy]?,
+                                            _[createdTime]?,
+                                            _[lastModifiedTime]?,
+                                            _[provisioningStatus]?,
+                                            _[groupId]?,
+                                            _[datasetId]?,
+                                            _[reportId]?,
+                                            _[statuses]?,
+                                            _[permissions]?,
+                                            _[columnSettings]?
+                                        }
+                                )
+                            )
+                    in
+                        output
+                else
+                    #table(
+                        type table [Response = text],
+                        {
+                            {
+                                "Please fill parameter of function."
+                            }
+                        }
+                    )
+        in
+            functionVarTester;
+
+//**** Goals
+[
+    DataSource.Kind = "PowerBIRESTAPI"
+]
+shared PowerBIRESTAPI.Goals = Value.ReplaceType(Goals, GoalsType);
+
+GoalsType =
+    type function (optional workspaceId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Workspace ID",
+                Documentation.FieldDescription = "Workspace ID where is scorecard stored.",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        ), optional scorecardId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Scorecard ID",
+                Documentation.FieldDescription = "Scorecard ID from where you want to recieve goals.",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "PowerBIRESTAPI.Goals",
+        Documentation.LongDescription =
+            "!!! This call can be used only on Groups where you have access !!!
+        Returns all Goals that are from selected scorecard and in selected workspace.",
+        Documentation.Examples = {
+            [
+                Code = "=PowerBIRESTAPI.Goals(""xxx-xxxx-yyxa..."",""xxx-xxxx-yyxa..."")",
+                Result = ""
+            ]
+        }
+    ];
+
+Goals =
+    (optional workspaceId as text, optional scorecardId as text) =>
+        let
+            functionVarTester =
+                try
+                    if
+                        (
+                            workspaceId
+                            <> null and workspaceId
+                            <> ""
+                        ) and (
+                            scorecardId
+                            <> null and scorecardId
+                            <> ""
+                        )
+                    then
+                        let
+                            apiCall =
+                                Json.Document(
+                                    Web.Contents(
+                                        "https://api.powerbi.com/v1.0/myorg",
+                                        [
+                                            RelativePath =
+                                                "groups/"
+                                                & workspaceId
+                                                & "/scorecards/"
+                                                & scorecardId
+                                                & "/goals",
+                                            Headers = [
+                                                #"Content-Type" = "application/json"
+                                            ]
+                                        ]
+                                    )
+                                ),
+                            output =
+                                #table(
+                                    type table [
+                                        id = text,
+                                        name = text,
+                                        scorecardId = text,
+                                        lastModifiedBy = text,
+                                        createdTime = datetime,
+                                        owner = text,
+                                        unit = text,
+                                        lastModifiedTime = datetime,
+                                        startDate = datetime,
+                                        completionDate = datetime,
+                                        valueConnection = record,
+                                        notesCount = text,
+                                        valuesFormatString = text,
+                                        permissions = text,
+                                        level = text,
+                                        rank = text,
+                                        additionalOwners = list
+                                    ],
+                                    List.Transform(
+                                        apiCall[value],
+                                        each
+                                            {
+                                                _[id]?,
+                                                _[name]?,
+                                                _[scorecardId]?,
+                                                _[lastModifiedBy]?,
+                                                _[createdTime]?,
+                                                _[owner]?,
+                                                _[unit]?,
+                                                _[lastModifiedTime]?,
+                                                _[startDate]?,
+                                                _[completionDate]?,
+                                                _[valueConnection]?,
+                                                _[notesCount]?,
+                                                _[valuesFormatString]?,
+                                                _[permissions]?,
+                                                _[level]?,
+                                                _[rank]?,
+                                                _[additionalOwners]?
+                                            }
+                                    )
+                                )
+                        in
+                            output
+                    else
+                        #table(
+                            type table [Response = text],
+                            {
+                                {
+                                    "Please fill parameters of function."
+                                }
+                            }
+                        )
+                otherwise
+                    #table(
+                        type table [Response = text],
+                        {
+                            {
+                                "Hmm... Something is not quite right. Please check inserted parameters or try it later."
+                            }
+                        }
+                    )
+        in
+            functionVarTester;
+
+//**** Scanner API - GET INFO()
+[DataSource.Kind = "PowerBIRESTAPI"]
+shared PowerBIRESTAPI.ScannerAPIInfo = Value.ReplaceType(ScannerAPIInfo, ScannerAPIInfoType);
+
+ScannerAPIInfoType = type function (
+    optional workspaceId as (
+        type text meta [
+            Documentation.FieldCaption = "Workspace ID",
+            Documentation.FieldDescription = "Workspace ID on what will scanning will be started.",
+            Documentation.SampleValues = {"xxx-xxxx-yyxa..."}
+        ]
+    ),
+    optional listWithWokspaceIds as (
+        type list meta [
+            Documentation.FieldCaption = "List with Workspace IDs",
+            Documentation.FieldDescription = "List of Workspace IDs on what will scanning will be started.",
+            Documentation.SampleValues = {"{xxx-xxxx-yyxa...,xxx-xxxx-yyxa...}"}
+        ]
+    )
+) as table meta [
+    Documentation.Name = "pbiAdminAPI.ScannerAPIInfo",
+    Documentation.LongDescription = "!!! This call only starts a scanning. For results of this scanning dont forget to call function for Results !!!
+        Returns ONLY and ONLY ""Id"" of scanning that is required for other calls.",
+    Documentation.Examples = {[Code = "=pbiAdminAPI.ScannerAPIInfo(""xxx-xxxx-yyxa..."")", Result = ""]}
+];
+
+ScannerAPIInfo = (optional workspaceId as text, optional listWithWokspaceIds as list) =>
+    let
+        functionVarTester =
+            if
+                (workspaceId <> null and workspaceId <> "")
+                or (listWithWokspaceIds <> null and listWithWokspaceIds <> {})
+            then
+                let
+                    apiCall = (wsId as text) => Json.Document(
+                        Web.Contents(
+                            "https://api.powerbi.com/v1.0/myorg/",
+                            [
+                                RelativePath = "admin/workspaces/getInfo?lineage=True&datasourceDetails=True&datasetSchema=True&datasetExpressions=True&getArtifactUsers=True",
+                                Headers = [#"Content-Type" = "application/json"],
+                                Content = Text.ToBinary("{ ""workspaces"": [ " & wsId & "]}")
+                            ]
+                        )
+                    ),
+                    ids =
+                        if workspaceId = null then
+                            let
+                                split = List.Split(listWithWokspaceIds, 100),
+                                transformator = List.Transform(
+                                    split,
+                                    each
+                                        let
+                                            insertedList = _,
+                                            idCreator =
+                                                """"
+                                                & List.Accumulate(
+                                                    List.RemoveFirstN(insertedList, 1),
+                                                    List.First(insertedList),
+                                                    (state, current) => state & """,""" & current
+                                                )
+                                                & """",
+                                            call = apiCall(idCreator)
+                                        in
+                                            call
+                                )
+                            in
+                                transformator
+                        else
+                            {apiCall("""" & workspaceId & """")},
+                    output = #table(type table [#"Id of Scan" = text], List.Transform(ids,each {[id]?}))
+                in
+                    output
+            else
+                #table(type table [Response = text], {{"Please fill parameter of function."}})
+    in
+        functionVarTester;
+
+//**** Scanner API - GET STATUS AND RESULTS
+[
+    DataSource.Kind = "PowerBIRESTAPI"
+]
+shared PowerBIRESTAPI.ScannerAPIStatusAndResult =
+    Value.ReplaceType(
+        ScannerAPIStatusAndResult,
+        ScannerAPIStatusAndResultType
+    );
+
+ScannerAPIStatusAndResultType =
+    type function (optional scanId as
+        (
+            type text
+            meta
+            [
+                Documentation.FieldCaption = "Scan ID",
+                Documentation.FieldDescription = "Scan ID that has been returned from function ""Scanner API - Get Info""",
+                Documentation.SampleValues = {
+                    "xxx-xxxx-yyxa..."
+                }
+            ]
+        )) as table
+    meta
+    [
+        Documentation.Name = "PowerBIRESTAPI.ScannerAPIStatusAndResultType",
+        Documentation.LongDescription = "This function will validate if the scan is successfully finished, and in that case, it returns data.",
+        Documentation.Examples = {
+            [
+                Code = "=PowerBIRESTAPI.ScannerAPIStatusAndResultType(""xxx-xxxx-yyxa..."")",
+                Result = ""
+            ]
+        }
+    ];
+
+ScannerAPIStatusAndResult =
+    (optional scanId as text) =>
+        let
+            functionVarTester =
+                if scanId <> null and scanId <> "" then
+                    let
+                        statusCall =
+                            Json.Document(
+                                Web.Contents(
+                                    "https://api.powerbi.com/v1.0/myorg",
+                                    [
+                                        RelativePath = "admin/workspaces/scanStatus/" & scanId,
+                                        Headers = [
+                                            #"Content-Type" = "application/json"
+                                        ]
+                                    ]
+                                )
+                            )
+                                [status],
+                        validationForNextSteps =
+                            if statusCall = "Succeeded" then
+                                let
+                                    resultCall =
+                                        Json.Document(
+                                            Web.Contents(
+                                                "https://api.powerbi.com/v1.0/myorg",
+                                                [
+                                                    RelativePath = "admin/workspaces/scanResult/" & scanId,
+                                                    Headers = [
+                                                        #"Content-Type" = "application/json"
+                                                    ]
+                                                ]
+                                            )
+                                        ),
+                                    resultOutput =
+                                        #table(
+                                            type table [
+                                                id = text,
+                                                name = text,
+                                                #"type" = text,
+                                                state = text,
+                                                isOnDedicatedCapacity = text,
+                                                capacityId = text,
+                                                reports = list,
+                                                dashboards = list,
+                                                datasets = list,
+                                                dataflows = list,
+                                                datamarts = list,
+                                                users = list
+                                            ],
+                                            List.Transform(
+                                                resultCall[workspaces],
+                                                each
+                                                    {
+                                                        _[id]?,
+                                                        _[name]?,
+                                                        _[#"type"]?,
+                                                        _[state]?,
+                                                        _[isOnDedicatedCapacity]?,
+                                                        _[capacityId]?,
+                                                        _[reports]?,
+                                                        _[dashboards]?,
+                                                        _[datasets]?,
+                                                        _[dataflows]?,
+                                                        _[datamarts]?,
+                                                        _[users]?
+                                                    }
+                                            )
+                                        )
+                                in
+                                    resultOutput
+                            else
+                                #table(
+                                    type table [Response = text],
+                                    {
+                                        {
+                                            "Scan is not completed yet. Try it later."
+                                        }
+                                    }
+                                )
+                    in
+                        validationForNextSteps
+                else
+                    #table(
+                        type table [Response = text],
+                        {
+                            {
+                                "Please fill parameter of function."
+                            }
+                        }
+                    )
+        in
+            functionVarTester;
+
 //
 // Data Source definition
 //

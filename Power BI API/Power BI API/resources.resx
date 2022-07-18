@@ -177,6 +177,9 @@
   <data name="Gateways" xml:space="preserve">
     <value>Gateways</value>
   </data>
+  <data name="GatewaysAsAdmin" xml:space="preserve">
+    <value>Gateways (Admin)</value>
+  </data>
   <data name="AppsAsAdmin" xml:space="preserve">
     <value>Apps (Admin)</value>
   </data>
@@ -265,6 +268,9 @@
   <data name="GETRawData" xml:space="preserve">
     <value>GETRawData</value>
   </data>
+  <data name="ExecuteQuery" xml:space="preserve">
+    <value>Execute DAX Query</value>
+  </data>
   <data name="GETRawDataCode" xml:space="preserve">
     <value>=PowerBIRESTAPI.GETRawData(""datasets"") Get the full documentation at  https://msdn.microsoft.com/en-us/library/dn877544.aspx</value>
   </data>
@@ -312,5 +318,17 @@
   </data>
   <data name="ReportPages" xml:space="preserve">
     <value>Report Pages</value>
+  </data>
+  <data name="Scorecards" xml:space="preserve">
+    <value>Metrics - Scorecards</value>
+  </data>
+  <data name="Goals" xml:space="preserve">
+    <value>Metrics - Goals</value>
+  </data>
+  <data name="ScannerAPIInfo" xml:space="preserve">
+    <value>ScannerAPI - Get Info</value>
+  </data>
+  <data name="ScannerAPIStatusAndResult" xml:space="preserve">
+    <value>ScannerAPI - Results of Scan</value>
   </data>
 </root>
