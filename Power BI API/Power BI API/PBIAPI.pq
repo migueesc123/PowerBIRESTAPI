@@ -115,7 +115,8 @@ let
             {Extension.LoadString("PipelineStagesAsAdmin"),"PipelineStagesAsAdmin",PowerBIRESTAPI.PipelineStagesAsAdmin(),"Table","Table",true},
             {Extension.LoadString("PipelineUsersAsAdmin"),"PipelineUsersAsAdmin",PowerBIRESTAPI.PipelineUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("CapacitiesAsAdmin"),"CapacitiesAsAdmin",PowerBIRESTAPI.CapacitiesAsAdmin(),"Table","Table",true},
-            {Extension.LoadString("CapacityRefreshablesAsAdmin"),"CapacityRefreshablesAsAdmin",PowerBIRESTAPI.CapacityRefreshablesAsAdmin(),"Table","Table",true}
+            {Extension.LoadString("CapacityRefreshablesAsAdmin"),"CapacityRefreshablesAsAdmin",PowerBIRESTAPI.CapacityRefreshablesAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("ReportSubscriptionsAsAdmin"),"ReportSubscriptionsAsAdmin",PowerBIRESTAPI.ReportSubscriptionsAsAdmin(),"Table","Table",true}
         }),
         NavTable = Table.ToNavigationTable(objects, {"Key"},"Name","Data","ItemKind","ItemName","IsLeaf")
 in
@@ -877,6 +878,21 @@ let
 	changeType = Table.TransformColumnTypes(filterNoReports,{{"Report ID", type text}, {"Report Type", type text}, {"Report Name", type text}, {"Dataset ID", type text}})
 in
 	changeType;
+
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.ReportSubscriptionsAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.ReportsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Report ID"}),
+	subscriptions = Table.AddColumn(trimColumns, "subscriptions", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/reports/" & Text.From([Report ID])&"/subscriptions") )[value],{"id", "title", "artifactId", "artifactDisplayName", "subArtifactDisplayName", "artifactType", "isEnabled", "frequency", "startDate", "endDate", "linkToContent", "previewImage", "attachmentFormat", "users"},MissingField.UseNull) otherwise null ),
+    expandSubscriptions = Table.ExpandTableColumn(subscriptions, "subscriptions", {"id", "title", "artifactId", "artifactDisplayName", "subArtifactDisplayName", "artifactType", "isEnabled", "frequency", "startDate", "endDate", "linkToContent", "previewImage", "attachmentFormat", "users"}, {"id", "title", "artifactId", "artifactDisplayName", "subArtifactDisplayName", "artifactType", "isEnabled", "frequency", "startDate", "endDate", "linkToContent", "previewImage", "attachmentFormat", "users"}),
+    filterNoSubscriptions = Table.SelectRows(expandSubscriptions, each [id] <> null and [id] <> ""),
+    expandUsersAndGroups = Table.ExpandRecordColumn(Table.ExpandListColumn(filterNoSubscriptions, "users"), "users", {"emailAddress", "displayName", "identifier", "graphId", "principalType", "userType"}, {"emailAddress", "displayName", "identifier", "graphId", "principalType", "userType"}),
+    parsedDate = Table.TransformColumns(expandUsersAndGroups,{{"endDate", each Date.From(DateTimeZone.From(_)), type date}, {"startDate", each Date.From(DateTimeZone.From(_)), type date}}),
+    changedType = Table.TransformColumnTypes(parsedDate,{{"linkToContent", type logical}, {"previewImage", type logical}, {"isEnabled", type logical}})
+in
+    changedType;
 
 
 [DataSource.Kind="PowerBIRESTAPI"]
