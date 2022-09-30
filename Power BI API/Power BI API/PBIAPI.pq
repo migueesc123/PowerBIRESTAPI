@@ -673,8 +673,7 @@ let
     #"Expanded upstreamDataflows" = Table.ExpandRecordColumn(upstreamDataflows, "upstreamDataflows", {"value"}, {"value"}),
     #"Expanded value" = Table.ExpandListColumn(#"Expanded upstreamDataflows", "value"),
     #"Expanded value1" = Table.ExpandRecordColumn(#"Expanded value", "value", {"targetDataflowId", "groupId"}, {"Upstream Dataflow ID", "Upstream Workspace ID"}),
-    #"Filtered Rows" = Table.SelectRows(#"Expanded value1", each ([Upstream Dataflow ID] = "67be571c-b750-4585-a40c-13ba8afaa345")),
-    #"Changed Type" = Table.TransformColumnTypes(#"Filtered Rows",{{"Upstream Dataflow ID", type text}, {"Upstream Workspace ID", type text}})
+    #"Changed Type" = Table.TransformColumnTypes(#"Expanded value1",{{"Upstream Dataflow ID", type text}, {"Upstream Workspace ID", type text}})
 in
     #"Changed Type";
 
