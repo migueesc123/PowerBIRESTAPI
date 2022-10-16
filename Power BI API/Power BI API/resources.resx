@@ -334,4 +334,7 @@
   <data name="ReportSubscriptionsAsAdmin" xml:space="preserve">
     <value>Report Subscriptions (Admin)</value>
   </data>
+  <data name="ReportSubscriptionUsersAsAdmin" xml:space="preserve">
+    <value>Report Subscription Users (Admin)</value>
+  </data>
 </root>
