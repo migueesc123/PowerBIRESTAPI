@@ -193,7 +193,7 @@ GetActivityLog = (url as text) =>
     let
        Pagination = List.Generate( ()=>
             [Call = Json.Document( Web.Contents(url)), next= try Call[continuationUri] otherwise null, Data = try Call[activityEventEntities] otherwise null],
-            each [next] <> null and [Data] <> null, 
+            each [Data] <> null, 
             each [Call = Json.Document( Web.Contents([next])), next= try Call[continuationUri] otherwise null, Data = try Call[activityEventEntities] otherwise null],
             each [Data])
             in
