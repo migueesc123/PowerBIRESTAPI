@@ -596,6 +596,7 @@ let
         else if [Datasource Type] = "Teradata" then [server] 
         else if [Datasource Type] = "Exchange" then [emailAddress] 
         else if [Datasource Type] = "OleDb" then [connectionString] 
+        else if [Datasource Type] = "AzureBlobs" then [account] & " | " & [domain]
         else "Requires Mapping"),
 	filterNoDatasource = Table.SelectRows(ConnectionInfo, each ([Datasource Type] <> null)),
 	removeColumns = Table.RemoveColumns(filterNoDatasource,{"url", "path", "kind", "server", "database", "connectionString", "emailAddress", "domain", "Server And Database", "ExtensionFull"}),
