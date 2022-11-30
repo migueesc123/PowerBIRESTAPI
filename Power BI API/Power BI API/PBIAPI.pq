@@ -874,9 +874,9 @@ let
 	source = PowerBIRESTAPI.GroupsAsAdmin(),
 	trimColumns = Table.SelectColumns(source,{"Workspace ID", "reports"}),
 	convertToRecords = Table.ExpandListColumn(trimColumns, "reports"),
-	expandRecords = Table.ExpandRecordColumn(convertToRecords, "reports", {"id", "reportType", "name", "datasetId"}, {"Report ID", "Report Type", "Report Name", "Dataset ID"}),
+	expandRecords = Table.ExpandRecordColumn(convertToRecords, "reports", {"id", "reportType", "name", "datasetId", "appId"}, {"Report ID", "Report Type", "Report Name", "Dataset ID", "App ID"}),
 	filterNoReports = Table.SelectRows(expandRecords, each ([Report ID] <> null)),
-	changeType = Table.TransformColumnTypes(filterNoReports,{{"Report ID", type text}, {"Report Type", type text}, {"Report Name", type text}, {"Dataset ID", type text}})
+	changeType = Table.TransformColumnTypes(filterNoReports,{{"Report ID", type text}, {"Report Type", type text}, {"Report Name", type text}, {"Dataset ID", type text}, {"App ID", type text}})
 in
 	changeType;
 
@@ -958,9 +958,9 @@ let
 	source = PowerBIRESTAPI.GroupsAsAdmin(),
 	trimColumns = Table.SelectColumns(source,{"Workspace ID", "dashboards"}),
 	convertToRecords = Table.ExpandListColumn(trimColumns, "dashboards"),
-	expandRecords = Table.ExpandRecordColumn(convertToRecords, "dashboards", {"id", "displayName", "isReadOnly"}, {"Dashboard ID", "Dashboard Name", "Is Read Only"}),
+	expandRecords = Table.ExpandRecordColumn(convertToRecords, "dashboards", {"id", "displayName", "isReadOnly", "appId"}, {"Dashboard ID", "Dashboard Name", "Is Read Only", "App ID"}),
 	filterNoDashboards = Table.SelectRows(expandRecords, each ([Dashboard ID] <> null)),
-	changeType = Table.TransformColumnTypes(filterNoDashboards,{{"Dashboard ID", type text}, {"Dashboard Name", type text}, {"Is Read Only", type logical}})
+	changeType = Table.TransformColumnTypes(filterNoDashboards,{{"Dashboard ID", type text}, {"Dashboard Name", type text}, {"Is Read Only", type logical}, {"App ID", type logical}})
 in
 	changeType;
 
