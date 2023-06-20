@@ -337,4 +337,7 @@
   <data name="ReportSubscriptionUsersAsAdmin" xml:space="preserve">
     <value>Report Subscription Users (Admin)</value>
   </data>
+  <data name="DashboardSubscriptionAsAdmin" xml:space="preserve">
+    <value>Dashboard Subscription (Admin)</value>
+  </data>
 </root>

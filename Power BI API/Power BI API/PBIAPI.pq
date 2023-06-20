@@ -131,6 +131,7 @@ let
             {Extension.LoadString("DatasetUsersAsAdmin"),"DatasetUsersAsAdmin",PowerBIRESTAPI.DatasetUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowUsersAsAdmin"),"DataflowUsersAsAdmin",PowerBIRESTAPI.DataflowUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DashboardUsersAsAdmin"),"DashboardUsersAsAdmin",PowerBIRESTAPI.DashboardUsersAsAdmin(),"Table","Table",true},
+            {Extension.LoadString("DashboardSubscriptionsAsAdmin"),"DashboardSubscriptionsAsAdmin",PowerBIRESTAPI.DashboardSubscriptionsAsAdmin(),"Table","Table",true}
             {Extension.LoadString("GatewayDataSourceStatus"),"GatewayDataSourceStatus",PowerBIRESTAPI.GatewayDataSourceStatus(),"Table","Table",true},
             {Extension.LoadString("DatasetDatasourcesAsAdmin"),"DatasetDatasourcesAsAdmin",PowerBIRESTAPI.DatasetDatasourcesAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasourcesAsAdmin"),"DataflowDatasourcesAsAdmin",PowerBIRESTAPI.DataflowDatasourcesAsAdmin(),"Table","Table",true},
@@ -950,6 +951,21 @@ let
     changeType = Table.TransformColumnTypes(expand,{{"Email Address", type text}, {"User Access Level", type text}, {"Display Name", type text}, {"Identifier", type text}, {"Principal Type", type text}, {"Graph ID", type text}})
 in
     changeType;
+
+
+[DataSource.Kind="PowerBIRESTAPI"]
+	PowerBIRESTAPI.DashboardSubscriptionsAsAdmin = () =>
+let
+	source = PowerBIRESTAPI.DashboardsAsAdmin(),
+	trimColumns = Table.SelectColumns(source,{"Dashboard ID"}),
+	subscriptions = Table.AddColumn(trimColumns, "Subscriptions", each try Table.FromRecords(Json.Document(Web.Contents( "https://api.powerbi.com/v1.0/myorg/admin/dashboards/" & Text.From([Dashboard ID])&"/subscriptions") )[value],{"id", "title", "artifactId", "artifactDisplayName", "artifactType", "isEnabled", "frequency", "startDate", "endDate", "linkToContent", "previewImage", "users"},MissingField.UseNull) otherwise null ),
+    trimColumns2 = Table.SelectColumns(subscriptions,{"Subscriptions"}),
+    expandSubscriptions = Table.ExpandTableColumn(trimColumns2, "Subscriptions", {"id", "title", "artifactId", "artifactDisplayName", "artifactType", "isEnabled", "frequency", "startDate", "endDate", "linkToContent", "previewImage", "users"}, {"Subscription ID", "Subscription Name", "Dashboard ID", "Dashboard Name", "Dashboard Type", "Is Enabled", "Frequency", "Start Date", "End Date", "Link To Content", "Preview Image", "Users"}),
+    filterNoSubscriptions = Table.SelectRows(expandSubscriptions, each [Subscription ID] <> null and [Subscription ID] <> ""),
+    parsedDate = Table.TransformColumns(filterNoSubscriptions,{{"End Date", each Date.From(DateTimeZone.From(_)), type date}, {"Start Date", each Date.From(DateTimeZone.From(_)), type date}}),
+    changedType = Table.TransformColumnTypes(parsedDate,{{"Link To Content", type logical}, {"Preview Image", type logical}, {"Is Enabled", type logical}})
+in
+    changedType;
 
 
 [DataSource.Kind="PowerBIRESTAPI"]
