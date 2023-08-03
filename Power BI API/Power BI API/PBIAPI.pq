@@ -960,7 +960,7 @@ let
 	convertToRecords = Table.ExpandListColumn(trimColumns, "dashboards"),
 	expandRecords = Table.ExpandRecordColumn(convertToRecords, "dashboards", {"id", "displayName", "isReadOnly", "appId"}, {"Dashboard ID", "Dashboard Name", "Is Read Only", "App ID"}),
 	filterNoDashboards = Table.SelectRows(expandRecords, each ([Dashboard ID] <> null)),
-	changeType = Table.TransformColumnTypes(filterNoDashboards,{{"Dashboard ID", type text}, {"Dashboard Name", type text}, {"Is Read Only", type logical}, {"App ID", type logical}})
+	changeType = Table.TransformColumnTypes(filterNoDashboards,{{"Dashboard ID", type text}, {"Dashboard Name", type text}, {"Is Read Only", type logical}, {"App ID", type text}})
 in
 	changeType;
 
