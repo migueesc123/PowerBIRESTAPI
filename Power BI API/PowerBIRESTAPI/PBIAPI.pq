@@ -131,7 +131,7 @@ let
             {Extension.LoadString("DatasetUsersAsAdmin"),"DatasetUsersAsAdmin",PowerBIRESTAPI.DatasetUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowUsersAsAdmin"),"DataflowUsersAsAdmin",PowerBIRESTAPI.DataflowUsersAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DashboardUsersAsAdmin"),"DashboardUsersAsAdmin",PowerBIRESTAPI.DashboardUsersAsAdmin(),"Table","Table",true},
-            {Extension.LoadString("DashboardSubscriptionsAsAdmin"),"DashboardSubscriptionsAsAdmin",PowerBIRESTAPI.DashboardSubscriptionsAsAdmin(),"Table","Table",true}
+            {Extension.LoadString("DashboardSubscriptionsAsAdmin"),"DashboardSubscriptionsAsAdmin",PowerBIRESTAPI.DashboardSubscriptionsAsAdmin(),"Table","Table",true},
             {Extension.LoadString("GatewayDataSourceStatus"),"GatewayDataSourceStatus",PowerBIRESTAPI.GatewayDataSourceStatus(),"Table","Table",true},
             {Extension.LoadString("DatasetDatasourcesAsAdmin"),"DatasetDatasourcesAsAdmin",PowerBIRESTAPI.DatasetDatasourcesAsAdmin(),"Table","Table",true},
             {Extension.LoadString("DataflowDatasourcesAsAdmin"),"DataflowDatasourcesAsAdmin",PowerBIRESTAPI.DataflowDatasourcesAsAdmin(),"Table","Table",true},
