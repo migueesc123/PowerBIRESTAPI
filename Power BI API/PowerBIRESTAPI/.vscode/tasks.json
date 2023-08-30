@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "powerquery",
+			"operation": "compile",
+			"additionalArgs": [],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "build: Build connector project using MakePQX"
+		}
+	]
+}
